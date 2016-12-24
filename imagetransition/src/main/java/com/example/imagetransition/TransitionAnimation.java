@@ -24,7 +24,7 @@ public abstract class TransitionAnimation {
                     data.currentState=ImageState.newInstance(data.target);
                     makeTransformation(data);
 
-                    if(Build.VERSION.SDK_INT>=14) {
+                    if(Build.VERSION.SDK_INT>=12) {
                         data.target.animate()
                                 .scaleX(1.f)
                                 .scaleY(1.f)
@@ -33,6 +33,8 @@ public abstract class TransitionAnimation {
                                 .setInterpolator(data.interpolator)
                                 .setDuration(data.animationDuration)
                                 .setListener(provideListener(data.listenerList));
+                    }else {
+                        //TODO do animation for <12
                     }
 
                     return true;
@@ -104,6 +106,8 @@ public abstract class TransitionAnimation {
                         .setListener(provideListener(data.listenerList))
                         .translationX(deltaX)
                         .translationY(deltaY);
+            }else {
+                //TODO do animation for <12
             }
 
 

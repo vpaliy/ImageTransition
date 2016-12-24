@@ -60,6 +60,11 @@ public class TransitionRunner {
         return this;
     }
 
+    public TransitionRunner clearListeners() {
+        data.listenerList=null;
+        return this;
+    }
+
     public TransitionRunner addListener(TransitionListener... listeners) {
         if(listeners!=null) {
             if (data.listenerList == null) {

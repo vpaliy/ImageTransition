@@ -1,10 +1,15 @@
 package com.example.vasya.phototransition;
 
 import android.animation.Animator;
+import android.animation.ObjectAnimator;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
@@ -21,6 +26,8 @@ import java.io.File;
 public class DetailActivity extends AppCompatActivity {
 
     private TransitionRunner runner;
+    private ObjectAnimator backgroundAnimator;
+    private ColorDrawable background=new ColorDrawable(Color.BLACK);
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -32,10 +39,9 @@ public class DetailActivity extends AppCompatActivity {
         }
 
         final ImageView image=(ImageView) (findViewById(R.id.image));
+        final String pathTo=savedInstanceState.getString("key");
+        final ImageState prevImageState=savedInstanceState.getParcelable(TransitionStarter.IMAGE_STATE);
 
-        String pathTo=savedInstanceState.getString("key");
-
-        final Bundle bundle=savedInstanceState;
         if(pathTo!=null) {
             Glide.with(this)
                     .load(new File(pathTo))
@@ -50,14 +56,12 @@ public class DetailActivity extends AppCompatActivity {
                             return false;
                         }
 
-                        //when the image has been loaded, start transition
+                        //when the image has been loaded, start the transition
                         @Override
                         public boolean onResourceReady(Bitmap resource, File model, Target<Bitmap> target, boolean isFromMemoryCache, boolean isFirstResource) {
                             if(isFirstResource) {
-                                ImageState passedImage = bundle.getParcelable(TransitionStarter.IMAGE_STATE);
-                                if (passedImage != null) {
-                                    runner = TransitionRunner.with(passedImage).target(image);
-                                    runner.run(TransitionAnimation.ENTER);
+                                if(prevImageState!=null) {
+                                    initAnimator(prevImageState, image);
                                 }
                             }
                             return false;
@@ -67,11 +71,41 @@ public class DetailActivity extends AppCompatActivity {
         }
     }
 
+    private void initAnimator(ImageState state, final ImageView image) {
+        runner = TransitionRunner.with(state).target(image).addListener(new TransitionListener() {
+            @Override
+            public void onAnimationStart(Animator animator) {
+                super.onAnimationStart(animator);
+                ViewGroup parent=(ViewGroup)(image.getParent());
+                parent.setBackgroundDrawable(background);
+                backgroundAnimator=ObjectAnimator.ofInt(background,"alpha",0,255);
+                backgroundAnimator.setDuration(animator.getDuration());
+                backgroundAnimator.setInterpolator(new DecelerateInterpolator());
+                backgroundAnimator.start();
+            }
+        }).duration(500);
+        runner.run(TransitionAnimation.ENTER);
+    }
+
     @Override
     public void onBackPressed() {
         //if the animation has occurred, go ahead and start animating the image backwards
         if(runner!=null) {
+            runner.clearListeners();
+            //set listeners to control the animation here
             runner.addListener(new TransitionListener() {
+
+                //if you previously have changed the background of parent view,
+                // add this code in order to change the background of parent view to transparency
+                // thus the user can see where the animated image is going
+                @Override
+                public void onAnimationStart(Animator animator) {
+                    super.onAnimationStart(animator);
+                    backgroundAnimator.setDuration(animator.getDuration());
+                    backgroundAnimator.reverse();
+                }
+
+                /**ALWAYS DO THIS */
                 @Override
                 public void onAnimationEnd(Animator animator) {
                     super.onAnimationEnd(animator);
@@ -81,5 +115,11 @@ public class DetailActivity extends AppCompatActivity {
             });
             runner.run(TransitionAnimation.EXIT);
         }
+    }
+
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
     }
 }
