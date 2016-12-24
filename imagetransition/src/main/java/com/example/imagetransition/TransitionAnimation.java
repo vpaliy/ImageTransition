@@ -1,7 +1,6 @@
 package com.example.imagetransition;
 
 import android.animation.Animator;
-import android.os.Build;
 import android.view.ViewTreeObserver;
 
 import java.util.List;
@@ -24,7 +23,6 @@ public abstract class TransitionAnimation {
                     data.currentState=ImageState.newInstance(data.target);
                     makeTransformation(data);
 
-                    if(Build.VERSION.SDK_INT>=12) {
                         data.target.animate()
                                 .scaleX(1.f)
                                 .scaleY(1.f)
@@ -33,10 +31,6 @@ public abstract class TransitionAnimation {
                                 .setInterpolator(data.interpolator)
                                 .setDuration(data.animationDuration)
                                 .setListener(provideListener(data.listenerList));
-                    }else {
-                        //TODO do animation for <12
-                    }
-
                     return true;
                 }
             });
@@ -97,7 +91,6 @@ public abstract class TransitionAnimation {
             final float deltaX=data.prevState.locationX()-data.currentState.locationX();
             final float deltaY=data.prevState.locationY()-data.currentState.locationY();
 
-            if(Build.VERSION.SDK_INT>=12) {
                 data.target.animate()
                         .scaleX(scaleX)
                         .scaleY(scaleY)
@@ -106,9 +99,6 @@ public abstract class TransitionAnimation {
                         .setListener(provideListener(data.listenerList))
                         .translationX(deltaX)
                         .translationY(deltaY);
-            }else {
-                //TODO do animation for <12
-            }
 
 
 
