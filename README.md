@@ -79,7 +79,7 @@ For instance, you have 2 activities `A` and `B`, and both of them share the same
   
   * Also you can specify transition duration, interpolators, and add listeners.
       This example shows animating of the background of root view.
-      So, you can run any other animations at the same time with image transition.
+      So, you can run any other animations at the same time with the image transition.
       
   ```java
       private void startTransition(Bundle state, ImageView targetImage){
