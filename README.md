@@ -25,15 +25,15 @@ For instance, you have 2 activities `A` and `B`, and both of them share the same
 
 * Launch `B` activity in `A` using `TransitionStarter`.
 
-```java
-  private void launchB(@NonNull File mediaFile, @NonNull ImageView sharedImage) {
-        /*At this point you can send any data you want, there are no restrictions*/
-        Intent intent=new Intent(this,ActivityB.class);
-        intent.putExtra("pathToImage",mediaFile.getAbsolutePath());
+    ```java
+      private void launchB(@NonNull File mediaFile, @NonNull ImageView sharedImage) {
+            /*At this point you can send any data you want, there are no restrictions*/
+            Intent intent=new Intent(this,ActivityB.class);
+            intent.putExtra("pathToImage",mediaFile.getAbsolutePath());
         
-        TransitionStarter.with(this).from(sharedImage).start(intent); //that's it!
-    }
- ```
+            TransitionStarter.with(this).from(sharedImage).start(intent); //that's it!
+        }
+    ```
  
  * In 'B' activity you need to catch and process the data using `TransitionRunner` thus you will start the animation.
  
