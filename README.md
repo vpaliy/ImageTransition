@@ -22,8 +22,8 @@ For instance, you have 2 activities `A` and `B`, and both of them share the same
         <item name="android:windowBackground">@android:color/transparent</item>
      </style>
     ```
-
-* Launch `B` activity in `A` using `TransitionStarter`.
+    
+ * Launch `B` activity in `A` using `TransitionStarter`.
 
     ```java
       private void launchB(@NonNull File mediaFile, @NonNull ImageView sharedImage) {
@@ -35,7 +35,7 @@ For instance, you have 2 activities `A` and `B`, and both of them share the same
         }
     ```
  
- * In 'B' activity you need to catch and process the data using `TransitionRunner` thus you will start the animation.
+* In 'B' activity you need to catch and process the data using `TransitionRunner` thus you will start the animation.
  
     However, at this point you may want to use some library that will prepare your `ImageView`, 
     it could be `Picasso`, `Glide`, `Volley`, `ImageLoader` or `Fresco` (My own preference is Glide).
@@ -67,7 +67,7 @@ For instance, you have 2 activities `A` and `B`, and both of them share the same
                     .into(image);
  ```
  
- * Finally, after the resource has been loaded into `ImageView`, you can use `TransitionRunner` and run the transition.
+* Finally, after the resource has been loaded into `ImageView`, you can use `TransitionRunner` and run the transition.
  
   ```java
       private void startTransition(Bundle state, ImageView targetImage){
@@ -77,7 +77,7 @@ For instance, you have 2 activities `A` and `B`, and both of them share the same
       }
   ```
   
-  * Also you can specify transition duration, interpolators, and add listeners.
+ * Also you can specify transition duration, interpolators, and add listeners.
       This example shows animating of the background of root view.
       So, you can run any other animations at the same time with the image transition.
       
@@ -101,7 +101,7 @@ For instance, you have 2 activities `A` and `B`, and both of them share the same
       }
   ```
   
- * Once the activity finishes, you need to animate the image backwards.
+* Once the activity finishes, you need to animate the image backwards.
      In this case you need to use `TransitionAnimation.EXIT` instance.
      
      For example, when the user clicks on the back button, you may use the code below in order to return back:
