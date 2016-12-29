@@ -22,7 +22,11 @@
         </activity>
 
         <activity android:name=".DetailActivity"
-                  android:theme="@style/DetailsTheme">
+            android:theme="@style/DetailsTheme">
+        </activity>
+
+        <activity android:name=".LollipopActivity"
+            android:theme="@style/AppTheme">
         </activity>
     </application>
 

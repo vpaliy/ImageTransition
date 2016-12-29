@@ -83,7 +83,7 @@ public class DetailActivity extends AppCompatActivity {
                 backgroundAnimator.setInterpolator(new DecelerateInterpolator());
                 backgroundAnimator.start();
             }
-        }).duration(500);
+        }).duration(200);
         runner.run(TransitionAnimation.ENTER);
     }
 

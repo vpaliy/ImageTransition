@@ -1,12 +1,11 @@
 package com.example.imagetransition;
 
+import android.animation.Animator;
 import android.animation.TimeInterpolator;
+import android.annotation.TargetApi;
 import android.support.annotation.NonNull;
-import android.text.format.Time;
 import android.view.animation.DecelerateInterpolator;
-import android.view.animation.Interpolator;
 import android.widget.ImageView;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -18,17 +17,42 @@ public class TransitionRunner {
 
     static class TransitionData {
 
-        static final long DEFAULT_DURATION=400L;
+        static final int RUNNING = 1;
+        static final int FINISHED = -1;
+
+        int animationState = FINISHED;
+
+        static final long DEFAULT_DURATION = 400L;
 
         ImageState prevState;
         ImageState currentState;
         ImageView target;
 
-        long animationDuration=DEFAULT_DURATION;
+        long animationDuration = DEFAULT_DURATION;
 
-        TimeInterpolator interpolator=new DecelerateInterpolator();
-        List<TransitionListener> listenerList;
+        TimeInterpolator interpolator = new DecelerateInterpolator();
+        List<TransitionListener> listenerList = new ArrayList<>();
+        {
+            listenerList.add(new TransitionListener() {
+                @Override
+                public void onAnimationStart(Animator animator) {
+                    super.onAnimationStart(animator);
+                    animationState=RUNNING;
+                }
 
+                @Override
+                public void onAnimationCancel(Animator animator) {
+                    super.onAnimationCancel(animator);
+                    animationState=FINISHED;
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animator) {
+                    super.onAnimationEnd(animator);
+                    animationState=FINISHED;
+                }
+            });
+        }
     }
 
     private TransitionRunner(@NonNull ImageState prevState) {
@@ -60,6 +84,12 @@ public class TransitionRunner {
         return this;
     }
 
+
+    public boolean isRunning() {
+        return data.animationState != TransitionData.FINISHED;
+    }
+
+
     public TransitionRunner clearListeners() {
         data.listenerList=null;
         return this;
@@ -75,8 +105,17 @@ public class TransitionRunner {
         return this;
     }
 
-    public void run(TransitionAnimation animationInstance) {
-        animationInstance.runAnimation(data);
+    @TargetApi(14)
+    public void cancel() {
+        if(data.animationState==TransitionData.RUNNING) {
+            data.target.animate().cancel();
+        }
     }
 
+    public void run(TransitionAnimation animationInstance) {
+        if(isRunning()) {
+            cancel();
+        }
+        animationInstance.runAnimation(data);
+    }
 }
