@@ -26,7 +26,6 @@ import com.example.vasya.phototransition.utils.LoaderCallback;
 import com.example.vasya.phototransition.utils.ProjectUtils;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -112,8 +111,9 @@ public class ListLollipopActivity extends AppCompatActivity {
 
         @Override
         public View instantiateItem(ViewGroup container, final int position) {
+            //TODO fix the inflation here
             final ImageView itemView=(ImageView)inflater.inflate(R.layout.slider_image,container,false);
-            container.addView(itemView,itemView.getLayoutParams());
+            container.addView(itemView);
             itemView.setTransitionName(ProjectUtils.TRANSITION_NAME(position));
             if(isPicasso) {
                 Picasso.with(itemView.getContext())

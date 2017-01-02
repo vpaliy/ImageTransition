@@ -141,7 +141,9 @@ public class PreLollipopListActivity extends AppCompatActivity {
 
         @Override
         public View instantiateItem(ViewGroup container, final int position) {
+            //TODO fix the inflation here
             final ImageView itemView=(ImageView)inflater.inflate(R.layout.slider_image,container,false);
+            container.addView(itemView);
             if(isPicasso) {
                 Picasso.with(itemView.getContext())
                         .load(mediaFileList.get(position % mediaFileList.size()))

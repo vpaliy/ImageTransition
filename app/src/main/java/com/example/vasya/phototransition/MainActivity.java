@@ -14,8 +14,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -49,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     private int transitionChoice=LOLLIPOP;
     private Bundle reenterState;
     private RecyclerView recyclerView;
+    private boolean isPicasso=false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,9 +60,17 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initUI();
+        initActionBar();
+    }
+
+    private void initActionBar() {
+        if(getSupportActionBar()==null) {
+            setSupportActionBar((Toolbar) (findViewById(R.id.actionBar)));
+        }
     }
 
     private void initUI() {
+
 
         List<Integer> rawDrawableList= Arrays.asList(R.drawable.eleven,R.drawable.fifteen,R.drawable.five,
                 R.drawable.four,R.drawable.fourteen,R.drawable.seven,R.drawable.seventeen,
@@ -127,6 +137,25 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.loader,menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.picasso:
+                isPicasso=true;
+                return true;
+            case R.id.glide:
+                isPicasso=false;
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -249,6 +278,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(this, ListLollipopActivity.class);
                 intent.putExtra(ProjectUtils.DATA, mediaFileList);
                 intent.putExtra(ProjectUtils.START_POSITION, position);
+                intent.putExtra(ProjectUtils.PICASSO,isPicasso);
                 ActivityOptionsCompat options = ActivityOptionsCompat
                         .makeSceneTransitionAnimation(this, image, image.getTransitionName());
                 startActivity(intent, options.toBundle());
@@ -259,6 +289,7 @@ public class MainActivity extends AppCompatActivity {
             Intent intent=new Intent(this, PreLollipopListActivity.class);
             intent.putExtra(ProjectUtils.DATA, mediaFileList);
             intent.putExtra(ProjectUtils.START_POSITION, position);
+            intent.putExtra(ProjectUtils.PICASSO,isPicasso);
             TransitionStarter.with(this).from(image).startForResult(intent,1);
         }
 
@@ -269,12 +300,14 @@ public class MainActivity extends AppCompatActivity {
         if(transitionChoice==PRE_LOLLIPOP) {
             Intent intent=new Intent(this, PreLollipopActivity.class);
             intent.putExtra(ProjectUtils.DATA,resourceId);
+            intent.putExtra(ProjectUtils.PICASSO,isPicasso);
             TransitionStarter.with(this).from(image).start(intent); //that's it!
         }else {
             if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP) {
                 Intent intent=new Intent(this, LollipopActivity.class);
                 intent.putExtra(ProjectUtils.KEY,image.getTransitionName());
                 intent.putExtra(ProjectUtils.DATA,resourceId);
+                intent.putExtra(ProjectUtils.PICASSO,isPicasso);
                 ActivityOptions options = ActivityOptions
                         .makeSceneTransitionAnimation(this, image, image.getTransitionName());
                 startActivity(intent, options.toBundle());
@@ -306,6 +339,17 @@ public class MainActivity extends AppCompatActivity {
                     }
                     reenterState=null;
 
+                }else {
+                    View navigationBar = findViewById(android.R.id.navigationBarBackground);
+                    View statusBar = findViewById(android.R.id.statusBarBackground);
+                    if (navigationBar != null) {
+                        names.add(navigationBar.getTransitionName());
+                        sharedElements.put(navigationBar.getTransitionName(), navigationBar);
+                    }
+                    if (statusBar != null) {
+                        names.add(statusBar.getTransitionName());
+                        sharedElements.put(statusBar.getTransitionName(), statusBar);
+                    }
                 }
             }
         });
