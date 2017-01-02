@@ -5,9 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-     <com.example.vasya.phototransition.DynamicImage
+     <com.example.vasya.phototransition.utils.DynamicImage
          android:id="@+id/image"
-         android:transitionName="thumbnail"
          android:layout_width="match_parent"
          android:layout_height="300dp" />
 

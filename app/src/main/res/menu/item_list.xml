@@ -8,5 +8,11 @@
         <item
             android:id="@+id/pre_lollipop"
             android:title="Pre-Lollipop transitions" />
+        <item
+            android:id="@+id/lollipop_slider"
+            android:title="Lollipop slider" />
+        <item
+            android:id="@+id/pre_lollipop_slider"
+            android:title="Pre-Lollipop slider" />
     </group>
 </menu>

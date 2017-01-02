@@ -1,123 +1,186 @@
 package com.example.vasya.phototransition;
 
-import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.ActivityOptions;
+import android.app.SharedElementCallback;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.os.AsyncTask;
 import android.os.Build;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.widget.ImageView;
+import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.imagetransition.TransitionStarter;
-import java.io.File;
+import com.example.vasya.phototransition.lollipop.ListLollipopActivity;
+import com.example.vasya.phototransition.lollipop.LollipopActivity;
+import com.example.vasya.phototransition.prelollipop.PreLollipopActivity;
+import com.example.vasya.phototransition.prelollipop.PreLollipopListActivity;
+import com.example.vasya.phototransition.utils.DynamicImage;
+import com.example.vasya.phototransition.utils.ProjectUtils;
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG=MainActivity.class.getSimpleName();
+    private static boolean DEBUG=false;
 
-    private static final int DATA_REQUEST=1;
-    private boolean isPreLollipop=true;
+    private static final int PRE_LOLLIPOP=0;
+    private static final int LOLLIPOP=1;
+    private static final int PRE_LOLLIPOP_SLIDER=2;
+    private static final int LOLLIPOP_SLIDER=3;
+
+    private int transitionChoice=LOLLIPOP;
+    private Bundle reenterState;
+    private RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        requestFeature();
+        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP) {
+            requestFeature();
+        }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M) {
-            if(checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)== PackageManager.PERMISSION_DENIED) {
-                requestPermissions(new String[] {Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE},DATA_REQUEST);
-            }else {
-                makeQuery();
+        initUI();
+    }
+
+    private void initUI() {
+
+        List<Integer> rawDrawableList= Arrays.asList(R.drawable.eleven,R.drawable.fifteen,R.drawable.five,
+                R.drawable.four,R.drawable.fourteen,R.drawable.seven,R.drawable.seventeen,
+                R.drawable.six,R.drawable.sixteen,R.drawable.ten,R.drawable.thirt,R.drawable.three,R.drawable.twelve,
+                R.drawable.two);
+
+        recyclerView=(RecyclerView)(findViewById(R.id.recyclerView));
+        recyclerView.setLayoutManager(new GridLayoutManager(MainActivity.this,
+                getResources().getInteger(R.integer.gridSpanSize),GridLayoutManager.VERTICAL,false));
+        recyclerView.setAdapter(new GalleryAdapter(MainActivity.this,new ArrayList<>(rawDrawableList)));
+        final DrawerLayout layout=(DrawerLayout)(findViewById(R.id.drawerLayout));
+        NavigationView navigationView=(NavigationView)(findViewById(R.id.navigation));
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.lollipop:
+                        transitionChoice=LOLLIPOP;
+                        break;
+                    case R.id.pre_lollipop:
+                        transitionChoice=PRE_LOLLIPOP;
+                        break;
+                    case R.id.lollipop_slider:
+                        transitionChoice=LOLLIPOP_SLIDER;
+                        break;
+                    case R.id.pre_lollipop_slider:
+                        transitionChoice=PRE_LOLLIPOP_SLIDER;
+                        break;
+                }
+                layout.closeDrawers();
+                return true;
             }
-        }else {
-            makeQuery();
-        }
+        });
+
+
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case DATA_REQUEST:
-                makeQuery();
-        }
-    }
+    @TargetApi(21)
+    public void onActivityReenter(final int resultCode, Intent data) {
+        super.onActivityReenter(resultCode, data);
+        if(transitionChoice==LOLLIPOP_SLIDER) {
+            reenterState = data.getExtras();
+            int startPosition = reenterState.getInt(ProjectUtils.START_POSITION);
+            final int currentPosition = reenterState.getInt(ProjectUtils.CURRENT_POSITION);
 
-    private void makeQuery() {
-        new AsyncTask<Void,Void,ArrayList<File>>() {
-            @Override
-            protected ArrayList<File> doInBackground(Void... voids) {
-                Cursor cursor=getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                        new String[] {MediaStore.Images.ImageColumns.DATA},null,null,null);
-                List<File> imageFileList=new LinkedList<>();    //for better performance
-                if(cursor!=null) {
-                    if(cursor.moveToFirst()) {
-                        do {
-                            imageFileList.add(new File(cursor.getString
-                            (cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA))));
-                        } while (cursor.moveToNext());
-                    }
-                    cursor.close();
-                }
-                return new ArrayList<>(imageFileList);
+            //scroll to the image
+            if (startPosition != currentPosition) {
+                recyclerView.scrollToPosition(currentPosition);
             }
 
-            @Override
-            protected void onPostExecute(ArrayList<File> files) {
-                super.onPostExecute(files);
-                RecyclerView recyclerView=(RecyclerView)(findViewById(R.id.recyclerView));
-                recyclerView.setLayoutManager(new GridLayoutManager(MainActivity.this,4,GridLayoutManager.VERTICAL,false));
-                recyclerView.setAdapter(new GalleryAdapter(MainActivity.this,files));
-                final DrawerLayout layout=(DrawerLayout)(findViewById(R.id.drawerLayout));
-                NavigationView navigationView=(NavigationView)(findViewById(R.id.navigation));
-                navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            //if the user has reached an image which is beyond the screen,
+            // we need to apply code below, in order to shift the RecyclerView up/down and create a transition
+            postponeEnterTransition();
+
+            recyclerView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+                @Override
+                public boolean onPreDraw() {
+                    recyclerView.getViewTreeObserver().removeOnPreDrawListener(this);
+                    recyclerView.requestLayout();
+                    startPostponedEnterTransition();
+                    return true;
+                }
+            });
+        }
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(transitionChoice==PRE_LOLLIPOP_SLIDER) {
+            if (resultCode == RESULT_OK) {
+                reenterState = data.getExtras();
+                final int startPosition = reenterState.getInt(ProjectUtils.START_POSITION);
+                final int currentPosition = reenterState.getInt(ProjectUtils.CURRENT_POSITION);
+
+                //scroll to the image
+                if (startPosition != currentPosition) {
+                    recyclerView.scrollToPosition(currentPosition);
+                }
+              /*  ImageView sharedImageView = (ImageView)
+                        (recyclerView.findViewWithTag(ProjectUtils.TRANSITION_NAME(currentPosition)));
+                ImageState prevImageState = reenterState.getParcelable(TransitionStarter.IMAGE_STATE);
+                if (sharedImageView == null) {
+                    sharedImageView = (ImageView)
+                            (recyclerView.findViewHolderForAdapterPosition(currentPosition).itemView);
+                }
+                sharedImageView.bringToFront(); //otherwise you may get overlapping
+
+                if (prevImageState != null) {
+                    TransitionRunner.with(prevImageState).target(sharedImageView).
+                            duration(getResources().getInteger(R.integer.duration))
+                            .interpolator(new AccelerateInterpolator())
+                            .run(TransitionAnimation.ENTER);
+                    reenterState = null;
+                }*/
+
+                //if the user has reached an image which is beyond the screen,
+                // we need to apply code below, in order to shift the RecyclerView up/down and create a transition
+                recyclerView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
                     @Override
-                    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                        switch (item.getItemId()) {
-                            case R.id.lollipop:
-                                isPreLollipop=false;
-                                break;
-                            case R.id.pre_lollipop:
-                                isPreLollipop=true;
-                                break;
-                        }
-                        layout.closeDrawers();
+                    public boolean onPreDraw() {
+                        recyclerView.getViewTreeObserver().removeOnPreDrawListener(this);
+                        recyclerView.invalidate();
                         return true;
                     }
                 });
             }
-        }.execute(null,null);
+        }
     }
-
     private class GalleryAdapter extends
             RecyclerView.Adapter<GalleryAdapter.ImageViewHolder> {
 
-        private ArrayList<File> mediaFileList;
+        private ArrayList<Integer> imageList;
         private LayoutInflater inflater;
 
-        public GalleryAdapter(Context context, ArrayList<File> mediaFileList) {
+        public GalleryAdapter(Context context, ArrayList<Integer> imageList) {
             this.inflater=LayoutInflater.from(context);
-            this.mediaFileList=mediaFileList;
+            this.imageList=imageList;
         }
 
         public class ImageViewHolder extends RecyclerView.ViewHolder {
@@ -127,16 +190,20 @@ public class MainActivity extends AppCompatActivity {
             public ImageViewHolder(View itemView) {
                 super(itemView);
                 image=(DynamicImage)(itemView);
-                if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP) {
-                    image.setTransitionName("thumbnail");
-                }
                 image.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        if(isPreLollipop) {
-                            makePreLollipopTransition(mediaFileList.get(getAdapterPosition()), image);
-                        }else {
-                            makeLollipopTransition(mediaFileList.get(getAdapterPosition()),image);
+                        switch (transitionChoice) {
+                            case LOLLIPOP:
+                            case PRE_LOLLIPOP: {
+                                launchDetailsActivity(imageList.get(getAdapterPosition() % imageList.size()), image);
+                                break;
+                            }
+                            case LOLLIPOP_SLIDER:
+                            case PRE_LOLLIPOP_SLIDER: {
+                                launchSliderActivity(imageList,image,getAdapterPosition());
+                                break;
+                            }
                         }
                     }
                 });
@@ -144,10 +211,14 @@ public class MainActivity extends AppCompatActivity {
 
             public void onBindData() {
                 Glide.with(itemView.getContext())
-                        .load(mediaFileList.get(getAdapterPosition()))
+                        .load(imageList.get(getAdapterPosition()%imageList.size()))
                         .asBitmap()
                         .centerCrop()
                         .into(image);
+                if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP) {
+                    image.setTag(ProjectUtils.TRANSITION_NAME(getAdapterPosition()));
+                    image.setTransitionName(ProjectUtils.TRANSITION_NAME(getAdapterPosition()));
+                }
             }
         }
 
@@ -156,7 +227,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public ImageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View root=inflater.inflate(R.layout.image,parent,false);
-
             return new ImageViewHolder(root);
         }
 
@@ -167,33 +237,77 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
-            return mediaFileList.size();
+            return Integer.MAX_VALUE;
         }
     }
 
-    private void makePreLollipopTransition(@NonNull File mediaFile, ImageView image) {
 
-        Intent intent=new Intent(this,DetailActivity.class);
-        intent.putExtra("key",mediaFile.getAbsolutePath());
-        TransitionStarter.with(this).from(image).start(intent); //that's it!
+
+    private void launchSliderActivity(ArrayList<Integer> mediaFileList, ImageView image, int position) {
+        if(transitionChoice==LOLLIPOP_SLIDER) {
+            if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP) {
+                Intent intent = new Intent(this, ListLollipopActivity.class);
+                intent.putExtra(ProjectUtils.DATA, mediaFileList);
+                intent.putExtra(ProjectUtils.START_POSITION, position);
+                ActivityOptionsCompat options = ActivityOptionsCompat
+                        .makeSceneTransitionAnimation(this, image, image.getTransitionName());
+                startActivity(intent, options.toBundle());
+            }else {
+                Toast.makeText(this,"Current device doesn't support Lollipop version",Toast.LENGTH_LONG).show();
+            }
+        }else {
+            Intent intent=new Intent(this, PreLollipopListActivity.class);
+            intent.putExtra(ProjectUtils.DATA, mediaFileList);
+            intent.putExtra(ProjectUtils.START_POSITION, position);
+            TransitionStarter.with(this).from(image).startForResult(intent,1);
+        }
 
     }
 
 
-    @TargetApi(21)
-    private void makeLollipopTransition(@NonNull File mediaFile,ImageView image) {
-        Intent intent=new Intent(this,LollipopActivity.class);
-        intent.putExtra("key",mediaFile.getAbsolutePath());
-        ActivityOptions options = ActivityOptions
-                .makeSceneTransitionAnimation(this, image, image.getTransitionName());
-        startActivity(intent, options.toBundle());
-
+    private void launchDetailsActivity(int resourceId,ImageView image) {
+        if(transitionChoice==PRE_LOLLIPOP) {
+            Intent intent=new Intent(this, PreLollipopActivity.class);
+            intent.putExtra(ProjectUtils.DATA,resourceId);
+            TransitionStarter.with(this).from(image).start(intent); //that's it!
+        }else {
+            if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP) {
+                Intent intent=new Intent(this, LollipopActivity.class);
+                intent.putExtra(ProjectUtils.KEY,image.getTransitionName());
+                intent.putExtra(ProjectUtils.DATA,resourceId);
+                ActivityOptions options = ActivityOptions
+                        .makeSceneTransitionAnimation(this, image, image.getTransitionName());
+                startActivity(intent, options.toBundle());
+            }else {
+                Toast.makeText(this,"Current device doesn't support Lollipop version",Toast.LENGTH_LONG).show();
+            }
+        }
     }
+
 
     @TargetApi(21)
     private void requestFeature() {
         getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
         getWindow().setSharedElementsUseOverlay(false);
-    }
 
+        setExitSharedElementCallback(new SharedElementCallback() {
+            @Override
+            public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
+                if(reenterState!=null) {
+                    int startPosition = reenterState.getInt(ProjectUtils.START_POSITION);
+                    int currentPosition = reenterState.getInt(ProjectUtils.CURRENT_POSITION);
+
+                    if(startPosition!=currentPosition) {
+                        View sharedElement=recyclerView.findViewWithTag(ProjectUtils.TRANSITION_NAME(currentPosition));
+                        names.clear();
+                        sharedElements.clear();
+                        names.add(ProjectUtils.TRANSITION_NAME(currentPosition));
+                        sharedElements.put(ProjectUtils.TRANSITION_NAME(currentPosition),sharedElement);
+                    }
+                    reenterState=null;
+
+                }
+            }
+        });
+    }
 }
