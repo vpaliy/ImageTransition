@@ -8,6 +8,11 @@ This project provides a library for making transitions between the activities wi
 
 Please check out a [video](https://www.youtube.com/watch?v=ybzTDJHUrSo) with the same sample, there it goes more smoothly.
 
+# Get on Google Play #
+<a href="https://play.google.com/store/apps/details?id=com.vasya.phototransition">
+<img src="https://github.com/chrisbanes/PhotoView/blob/master/art/google-play-badge-small.png" />
+</a>
+
 # How do I use a shared image transition? #
 
 Basically, there are only three main abstractions you need to deal with: `TransitionStarter`, `TransitionRunner` and `TransitionAnimation`.
