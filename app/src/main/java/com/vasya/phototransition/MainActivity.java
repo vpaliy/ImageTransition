@@ -179,50 +179,6 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if(transitionChoice==PRE_LOLLIPOP_SLIDER) {
-            if (resultCode == RESULT_OK) {
-                reenterState = data.getExtras();
-                final int startPosition = reenterState.getInt(ProjectUtils.START_POSITION);
-                final int currentPosition = reenterState.getInt(ProjectUtils.CURRENT_POSITION);
-
-                //scroll to the image
-                if (startPosition != currentPosition) {
-                    recyclerView.scrollToPosition(currentPosition);
-                }
-              /*  ImageView sharedImageView = (ImageView)
-                        (recyclerView.findViewWithTag(ProjectUtils.TRANSITION_NAME(currentPosition)));
-                ImageState prevImageState = reenterState.getParcelable(TransitionStarter.IMAGE_STATE);
-                if (sharedImageView == null) {
-                    sharedImageView = (ImageView)
-                            (recyclerView.findViewHolderForAdapterPosition(currentPosition).itemView);
-                }
-                sharedImageView.bringToFront(); //otherwise you may get overlapping
-
-                if (prevImageState != null) {
-                    TransitionRunner.with(prevImageState).target(sharedImageView).
-                            duration(getResources().getInteger(R.integer.duration))
-                            .interpolator(new AccelerateInterpolator())
-                            .run(TransitionAnimation.ENTER);
-                    reenterState = null;
-                }*/
-
-                //if the user has reached an image which is beyond the screen,
-                // we need to apply code below, in order to shift the RecyclerView up/down and create a transition
-                recyclerView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-                    @Override
-                    public boolean onPreDraw() {
-                        recyclerView.getViewTreeObserver().removeOnPreDrawListener(this);
-                        recyclerView.invalidate();
-                        return true;
-                    }
-                });
-            }
-        }
-    }
-
     @Subscribe
     public void triggerVisibility(TriggerVisibility trigger) {
         ImageView image=(ImageView)(recyclerView.
