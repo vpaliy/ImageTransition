@@ -1,12 +1,17 @@
 # ImageTransition
 [![API](https://img.shields.io/badge/API-12%2B-blue.svg?style=flat)](https://android-arsenal.com/api?level=12) 
 
-This project provides a library for making a transitions between activities with shared images.
+This project provides a library for making transitions between the activities with shared images.
 
 # Simple example #
 ![](https://github.com/vpaliyX/ImageTransition/blob/master/art/ezgif.com-video-to-gif%20(4).gif)
 
 Please check out a [video](https://www.youtube.com/watch?v=ybzTDJHUrSo) with the same sample, there it goes more smoothly.
+
+# Get on Google Play #
+<a href="https://play.google.com/store/apps/details?id=com.vasya.phototransition">
+<img src="https://github.com/chrisbanes/PhotoView/blob/master/art/google-play-badge-small.png" />
+</a>
 
 # How do I use a shared image transition? #
 
@@ -77,8 +82,8 @@ For instance, you have 2 activities `A` and `B`, and both of them share the same
       }
   ```
   
- * Also you can specify transition duration, interpolators, and add listeners.
-      This example shows animating of the background of root view.
+ * Also you can specify a transition duration, interpolators, and add listeners.
+      This example shows animating of the background of the root view.
       So, you can run any other animations at the same time with the image transition.
       
   ```java
@@ -102,7 +107,7 @@ For instance, you have 2 activities `A` and `B`, and both of them share the same
   ```
   
 * Once the activity finishes, you need to animate the image backwards.
-     In this case you need to use `TransitionAnimation.EXIT` instance.
+     In this case you need to use the `TransitionAnimation.EXIT` instance.
      
      For example, when the user clicks on the back button, you may use the code below in order to return back:
     ```java
@@ -110,7 +115,7 @@ For instance, you have 2 activities `A` and `B`, and both of them share the same
          public void onBackPressed() {           
             //if the transition has occurred, go ahead and start animating the image backwards
             if(runner!=null) {
-                //if you have used any listeners before, clear that 
+                //if you have used any listeners before, wipe them down
                 runner.clearListeners();  
                 runner.addListener(new TransitionListener() {
                    //in the end of animation you need to finish the current activity and return back to the caller
