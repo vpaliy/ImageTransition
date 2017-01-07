@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-     <com.example.vasya.phototransition.utils.DynamicImage
+     <com.vasya.phototransition.utils.DynamicImage
          android:id="@+id/image"
          android:layout_width="match_parent"
          android:layout_height="300dp" />
