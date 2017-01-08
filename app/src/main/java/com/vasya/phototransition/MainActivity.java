@@ -15,7 +15,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,26 +22,21 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.Window;
-import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.Toast;
-
 import com.bumptech.glide.Glide;
-import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 import com.vasya.phototransition.lollipop.ListLollipopActivity;
 import com.vasya.phototransition.lollipop.LollipopActivity;
 import com.vasya.phototransition.prelollipop.PreLollipopActivity;
 import com.vasya.phototransition.prelollipop.PreLollipopListActivity;
-import com.vasya.phototransition.prelollipop.eventBus.CallbackRequest;
-import com.vasya.phototransition.prelollipop.eventBus.EventBusProvider;
-import com.vasya.phototransition.prelollipop.eventBus.TriggerVisibility;
 import com.vasya.phototransition.utils.DynamicImage;
 import com.vasya.phototransition.utils.ProjectUtils;
 import com.vpaliy.transition.ImageState;
 import com.vpaliy.transition.TransitionStarter;
-
-import java.net.PortUnreachableException;
+import com.vpaliy.transition.eventBus.CallbackRequest;
+import com.vpaliy.transition.eventBus.Registrator;
+import com.vpaliy.transition.eventBus.TriggerVisibility;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -62,10 +56,6 @@ public class MainActivity extends AppCompatActivity {
     private Bundle reenterState;
     private RecyclerView recyclerView;
     private boolean isPicasso=false;
-
-    private ImageView currentSharedImage;
-
-    private Bus bus= EventBusProvider.defaultBus();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        bus.register(this);
+        Registrator.register(this);
     }
 
     private void initUI() {
@@ -187,6 +177,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    //TODO find out why you need to redraw the layout
     @Subscribe
     public void requestForData(final CallbackRequest request) {
         recyclerView.scrollToPosition(request.requestedPosition());
@@ -196,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
                 recyclerView.getViewTreeObserver().removeOnPreDrawListener(this);
                 recyclerView.requestLayout();
                 ImageView image=(ImageView)(recyclerView.findViewWithTag
-                (ProjectUtils.TRANSITION_NAME(request.requestedPosition())));
+                    (ProjectUtils.TRANSITION_NAME(request.requestedPosition())));
                 request.run(ImageState.newInstance(image));
                 return true;
             }
@@ -206,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        bus.unregister(this);
+        Registrator.unregister(this);
     }
 
     private class GalleryAdapter extends
@@ -299,7 +290,7 @@ public class MainActivity extends AppCompatActivity {
             intent.putExtra(ProjectUtils.DATA, mediaFileList);
             intent.putExtra(ProjectUtils.START_POSITION, position);
             intent.putExtra(ProjectUtils.PICASSO,isPicasso);
-            TransitionStarter.with(this).from(image).startForResult(intent,1);
+            TransitionStarter.with(this).from(image).startForResult(intent,1,position);
         }
 
     }
@@ -311,7 +302,7 @@ public class MainActivity extends AppCompatActivity {
             intent.putExtra(ProjectUtils.DATA,resourceId);
             intent.putExtra(ProjectUtils.PICASSO,isPicasso);
             intent.putExtra(ProjectUtils.START_POSITION,position);
-            TransitionStarter.with(this).from(image).start(intent); //that's it!
+            TransitionStarter.with(this).from(image).start(intent,position); //that's it!
         }else {
             if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP) {
                 Intent intent=new Intent(this, LollipopActivity.class);

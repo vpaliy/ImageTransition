@@ -2,6 +2,7 @@ package com.vasya.phototransition.prelollipop;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -11,12 +12,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
-
 import com.bumptech.glide.Glide;
-import com.squareup.otto.Bus;
 import com.vasya.phototransition.R;
-import com.vasya.phototransition.prelollipop.eventBus.EventBusProvider;
-import com.vasya.phototransition.prelollipop.eventBus.TriggerVisibility;
 import com.vasya.phototransition.utils.LoaderCallback;
 import com.vasya.phototransition.utils.ProjectUtils;
 import com.vpaliy.transition.ImageState;
@@ -35,7 +32,6 @@ public class PreLollipopActivity extends AppCompatActivity {
     private ColorDrawable background=new ColorDrawable(Color.WHITE);
     private int startPosition;
 
-    private Bus bus= EventBusProvider.defaultBus();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -62,7 +58,7 @@ public class PreLollipopActivity extends AppCompatActivity {
                         @Override
                         public void onReady(ImageView image) {
                             if(prevImageState!=null) {
-                                initAnimator(prevImageState, image);
+                                initAnimator(getIntent(), image);
                             }
                         }
                     })
@@ -70,12 +66,12 @@ public class PreLollipopActivity extends AppCompatActivity {
         }
     }
 
-    private void initAnimator(final ImageState state, final ImageView image) {
-        runner = TransitionRunner.with(state).target(image).addListener(new TransitionListener() {
+    private void initAnimator(final Intent intent, final ImageView image) {
+        runner = TransitionRunner.with(intent).
+            target(image).addListener(new TransitionListener() {
             @Override
             public void onAnimationStart(Animator animator) {
                 super.onAnimationStart(animator);
-                bus.post(new TriggerVisibility(startPosition,false));
                 ViewGroup parent=(ViewGroup)(image.getParent());
                 parent.setBackgroundDrawable(background);
                 backgroundAnimator=ObjectAnimator.ofInt(background,"alpha",0,255);
@@ -108,7 +104,6 @@ public class PreLollipopActivity extends AppCompatActivity {
                 @Override
                 public void onAnimationEnd(Animator animator) {
                     super.onAnimationEnd(animator);
-                    bus.post(new TriggerVisibility(startPosition,true));
                     finish();
                     overridePendingTransition(0,0);
                 }

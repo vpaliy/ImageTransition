@@ -13,7 +13,8 @@ public class GlideModuleQ implements GlideModule {
 
     @Override
     public void applyOptions(Context context, GlideBuilder builder) {
-        ViewTarget.setTagId(R.id.glideRequest);
+        ViewTarget.setTagId(R.id.glideRequest); //if you use Glide, make sure that you have set this
+                                                //otherwise you will not be able to set the tags
     }
 
     @Override

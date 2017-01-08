@@ -3,6 +3,7 @@ package com.vpaliy.transition;
 
 import android.animation.Animator;
 
+/** Helpful class */
 public abstract class TransitionListener
             implements Animator.AnimatorListener{
 

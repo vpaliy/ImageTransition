@@ -1,4 +1,4 @@
-package com.vasya.phototransition.prelollipop.eventBus;
+package com.vpaliy.transition.eventBus;
 
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;

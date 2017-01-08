@@ -16,7 +16,7 @@ public class ImageState implements Parcelable {
     private float locationY;
     private float width;
     private float height;
-
+    private ImageView.ScaleType scaleType;
     private int imageOrientation;
 
 
@@ -26,6 +26,7 @@ public class ImageState implements Parcelable {
         this.width=in.readFloat();
         this.height=in.readFloat();
         this.imageOrientation=in.readInt();
+        this.scaleType= ImageView.ScaleType.valueOf(in.readString());
     }
 
     public ImageState(ImageView image) {
@@ -35,14 +36,17 @@ public class ImageState implements Parcelable {
         this.locationY=location[1];
         this.width=image.getWidth();
         this.height=image.getHeight();
+        this.scaleType=image.getScaleType();
         this.imageOrientation=image.getContext().getResources().getConfiguration().orientation;
     }
 
-    public ImageState(float locationX, float locationY, int width, int height, int orientation) {
+    public ImageState(float locationX, float locationY, int width,
+            int height, int orientation, ImageView.ScaleType scaleType) {
         this.locationX=locationX;
         this.locationY=locationY;
         this.width=width;
         this.height=height;
+        this.scaleType=scaleType;
         this.imageOrientation=orientation;
     }
 
@@ -71,6 +75,7 @@ public class ImageState implements Parcelable {
         parcel.writeFloat(width);
         parcel.writeFloat(height);
         parcel.writeInt(imageOrientation);
+        parcel.writeString(scaleType.name());
     }
 
     public float locationX() {
@@ -92,6 +97,10 @@ public class ImageState implements Parcelable {
 
     public float getWidth() {
         return width;
+    }
+
+    public ImageView.ScaleType scaleType() {
+        return scaleType;
     }
 
     public static ImageState newInstance(ImageView image) {

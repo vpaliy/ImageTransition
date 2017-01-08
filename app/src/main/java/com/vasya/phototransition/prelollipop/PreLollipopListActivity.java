@@ -2,7 +2,6 @@ package com.vasya.phototransition.prelollipop;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -11,20 +10,14 @@ import android.support.annotation.Nullable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
-
 import com.bumptech.glide.Glide;
-import com.squareup.otto.Bus;
 import com.vasya.phototransition.R;
-import com.vasya.phototransition.prelollipop.eventBus.CallbackRequest;
-import com.vasya.phototransition.prelollipop.eventBus.EventBusProvider;
-import com.vasya.phototransition.prelollipop.eventBus.TriggerVisibility;
 import com.vasya.phototransition.utils.LoaderCallback;
 import com.vasya.phototransition.utils.ProjectUtils;
 import com.squareup.picasso.Callback;
@@ -33,7 +26,7 @@ import com.vpaliy.transition.ImageState;
 import com.vpaliy.transition.TransitionAnimation;
 import com.vpaliy.transition.TransitionListener;
 import com.vpaliy.transition.TransitionRunner;
-import com.vpaliy.transition.TransitionStarter;
+import com.vpaliy.transition.eventBus.CallbackRequest;
 
 import java.util.ArrayList;
 
@@ -49,7 +42,6 @@ public class PreLollipopListActivity extends AppCompatActivity {
     private ObjectAnimator backgroundAnimator;
     private boolean isPicasso;
     private ContentSliderAdapter adapter;
-    private Bus bus= EventBusProvider.defaultBus();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -63,10 +55,7 @@ public class PreLollipopListActivity extends AppCompatActivity {
 
     private void initUI(Bundle args) {
         isPicasso=args.getBoolean(ProjectUtils.PICASSO);
-        ImageState prevImageState=args.getParcelable(TransitionStarter.IMAGE_STATE);
-        if(prevImageState!=null) {
-            runner = TransitionRunner.with(prevImageState);
-        }
+        runner=TransitionRunner.with(args);
         ArrayList<Integer> mediaFileList=args.getIntegerArrayList(ProjectUtils.DATA);
         startPosition=args.getInt(ProjectUtils.START_POSITION);
 
@@ -81,18 +70,6 @@ public class PreLollipopListActivity extends AppCompatActivity {
             }
         });
 
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        bus.register(this);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        bus.unregister(this);
     }
 
     private CallbackRequest.Callback callback=new CallbackRequest.Callback() {
@@ -113,7 +90,6 @@ public class PreLollipopListActivity extends AppCompatActivity {
                     @Override
                     public void onAnimationEnd(Animator animator) {
                         super.onAnimationEnd(animator);
-                        bus.post(new TriggerVisibility(currentPosition,true));
                         finish();
                         overridePendingTransition(0,0);
                     }
@@ -125,13 +101,13 @@ public class PreLollipopListActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if(currentPosition<0)
-            currentPosition=startPosition;
-        else if(currentPosition!=startPosition) {
-            bus.post(new TriggerVisibility(startPosition,true));
-            bus.post(new TriggerVisibility(currentPosition,false));
+        if(runner!=null) {
+            if (currentPosition < 0)
+                currentPosition = startPosition;
+            runner.requestUpdate(currentPosition,callback); //that's it
+        }else {
+            super.onBackPressed();
         }
-        bus.post(new CallbackRequest(currentPosition,callback));
     }
 
     @Override
@@ -183,7 +159,7 @@ public class PreLollipopListActivity extends AppCompatActivity {
             }else {
                 Glide.with(itemView.getContext()).
                         load(mediaFileList.get(position % mediaFileList.size())).
-                        asBitmap().centerCrop().
+                        asBitmap().fitCenter().
                         listener(checkForTransition(position)?new LoaderCallback<Integer, Bitmap>(itemView) {
                             @Override
                             public void onReady(ImageView image) {
@@ -218,7 +194,6 @@ public class PreLollipopListActivity extends AppCompatActivity {
                 @Override
                 public void onAnimationStart(Animator animator) {
                     super.onAnimationStart(animator);
-                    bus.post(new TriggerVisibility(startPosition,false));
                     ViewGroup parent=(ViewGroup)(image.getParent());
                     parent.setBackgroundDrawable(background);
                     backgroundAnimator= ObjectAnimator.ofInt(background,"alpha",0,255);

@@ -1,8 +1,13 @@
 package com.vpaliy.transition;
 
 import android.animation.Animator;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.ViewTreeObserver;
+
+import com.squareup.otto.Bus;
+import com.vpaliy.transition.eventBus.EventBusProvider;
+import com.vpaliy.transition.eventBus.TriggerVisibility;
 
 import java.util.List;
 
@@ -15,12 +20,13 @@ public abstract class TransitionAnimation {
 
     public static final TransitionAnimation ENTER=new TransitionAnimation() {
 
+
         @Override
         public void runAnimation(final TransitionRunner.TransitionData data) {
             data.target.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
                 @Override
                 public boolean onPreDraw() {
-                    //disable this listener at this point
+                    data.listenerList.add(new Listener(data));
                     data.target.getViewTreeObserver().removeOnPreDrawListener(this);
                     data.currentState= ImageState.newInstance(data.target);
                     makeTransformation(data);
@@ -33,6 +39,7 @@ public abstract class TransitionAnimation {
                             .setInterpolator(data.interpolator)
                             .setDuration(data.animationDuration)
                             .setListener(provideListener(data.listenerList));
+
                     return true;
                 }
             });
@@ -86,21 +93,27 @@ public abstract class TransitionAnimation {
         @Override
         public void runAnimation(TransitionRunner.TransitionData data) {
 
-            final float scaleX=data.prevState.width()/data.currentState.width();
-            final float scaleY=data.prevState.height()/data.currentState.height();
+            data.listenerList.add(new Listener(data));
+
+             float scaleX=data.prevState.width()/data.currentState.width();
+             float scaleY=data.prevState.height()/data.currentState.height();
 
 
             final float deltaX=data.prevState.locationX()-data.currentState.locationX();
             final float deltaY=data.prevState.locationY()-data.currentState.locationY();
 
 
-            /* Just to make sure it has appropriate properties, otherwise you get bad behavior */
-            data.target.setPivotY(0);
-            data.target.setPivotX(0);
-            data.target.setScaleX(1.f);
-            data.target.setScaleY(1.f);
-            data.target.setTranslationX(0f);
-            data.target.setTranslationY(0f);
+            /* Just to make sure it has appropriate properties, otherwise you get a bad behavior */
+            if(data.animationState!= TransitionRunner.TransitionData.CANCELED) {
+                data.target.setPivotX(0);
+                data.target.setPivotY(0);
+
+                data.target.setScaleX(1.f);
+                data.target.setScaleY(1.f);
+
+                data.target.setTranslationX(0f);
+                data.target.setTranslationY(0f);
+            }
 
             data.target.animate()
                     .scaleX(scaleX)
@@ -118,9 +131,9 @@ public abstract class TransitionAnimation {
 
 
     private static void makeTransformation(TransitionRunner.TransitionData data) {
+
         final float scaleX=data.prevState.width()/data.currentState.width();
         final float scaleY=data.prevState.height()/data.currentState.height();
-
 
         final float deltaX=data.prevState.locationX()-data.currentState.locationX();
         final float deltaY=data.prevState.locationY()-data.currentState.locationY();
@@ -135,6 +148,32 @@ public abstract class TransitionAnimation {
         data.target.setTranslationY(deltaY);
 
 
+    }
+
+    private static class Listener extends TransitionListener {
+
+        private TransitionRunner.TransitionData data;
+        private Bus eventBus=EventBusProvider.defaultBus();
+
+        public Listener(TransitionRunner.TransitionData data) {
+            this.data = data;
+        }
+
+        @Override
+        public void onAnimationStart(Animator animator) {
+            super.onAnimationStart(animator);
+            if(data.startPosition>0) {
+                eventBus.post(new TriggerVisibility(data.startPosition,false));
+            }
+        }
+
+        @Override
+        public void onAnimationEnd(Animator animator) {
+            super.onAnimationEnd(animator);
+            if(data.startPosition>0) {
+                eventBus.post(new TriggerVisibility(data.startPosition,true));
+            }
+        }
     }
 
     public abstract void runAnimation(TransitionRunner.TransitionData data);

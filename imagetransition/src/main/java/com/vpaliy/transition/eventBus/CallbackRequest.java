@@ -1,8 +1,7 @@
-package com.vasya.phototransition.prelollipop.eventBus;
+package com.vpaliy.transition.eventBus;
 
 
 import android.support.annotation.NonNull;
-import android.widget.ImageView;
 
 import com.vpaliy.transition.ImageState;
 
