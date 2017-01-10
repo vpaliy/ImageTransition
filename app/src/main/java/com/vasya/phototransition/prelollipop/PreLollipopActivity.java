@@ -13,9 +13,12 @@ import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.vasya.phototransition.R;
 import com.vasya.phototransition.utils.LoaderCallback;
 import com.vasya.phototransition.utils.ProjectUtils;
+import com.vpaliy.transition.AnimatedImageView;
 import com.vpaliy.transition.ImageState;
 import com.vpaliy.transition.TransitionAnimation;
 import com.vpaliy.transition.TransitionListener;
@@ -30,7 +33,6 @@ public class PreLollipopActivity extends AppCompatActivity {
     private TransitionRunner runner;
     private ObjectAnimator backgroundAnimator;
     private ColorDrawable background=new ColorDrawable(Color.WHITE);
-    private int startPosition;
 
 
     @Override
@@ -42,21 +44,34 @@ public class PreLollipopActivity extends AppCompatActivity {
             savedInstanceState = getIntent().getExtras();
         }
 
-        final ImageView image=(ImageView) (findViewById(R.id.image));
+        final AnimatedImageView image=(AnimatedImageView) (findViewById(R.id.image));
         final int resourceId=savedInstanceState.getInt(ProjectUtils.DATA,-1);
         final ImageState prevImageState=savedInstanceState.getParcelable(TransitionStarter.IMAGE_STATE);
-        startPosition=savedInstanceState.getInt(ProjectUtils.CURRENT_POSITION);
+        final int startPosition=savedInstanceState.getInt(ProjectUtils.CURRENT_POSITION);
 
         if(resourceId>0){
             Glide.with(this)
                     .load(resourceId)
                     .asBitmap()
-                    .centerCrop()
+                    .fitCenter()
                     //to prevent the animation from shuddering, use the listener to track when the image is ready,
-                    // otherwise you may start animation when the resource hasn't been loaded yet
-                    .listener(new LoaderCallback<Integer, Bitmap>(image) {
+                    // otherwise you may start the animation when the resource hasn't been loaded yet
+                    .listener(new RequestListener<Integer, Bitmap>() {
                         @Override
-                        public void onReady(ImageView image) {
+                        public boolean onException(Exception e, Integer model, Target<Bitmap> target, boolean isFirstResource) {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(Bitmap resource, Integer model, Target<Bitmap> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                            if(isFirstResource) {
+                                image.setImageBitmap(resource);
+                                onReady(image);
+                            }
+                            return true;
+                        }
+
+                        public void onReady(AnimatedImageView image) {
                             if(prevImageState!=null) {
                                 initAnimator(getIntent(), image);
                             }
@@ -66,7 +81,7 @@ public class PreLollipopActivity extends AppCompatActivity {
         }
     }
 
-    private void initAnimator(final Intent intent, final ImageView image) {
+    private void initAnimator(final Intent intent, final AnimatedImageView image) {
         runner = TransitionRunner.with(intent).
             target(image).addListener(new TransitionListener() {
             @Override

@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,11 +18,14 @@ import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.vasya.phototransition.R;
 import com.vasya.phototransition.utils.LoaderCallback;
 import com.vasya.phototransition.utils.ProjectUtils;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
+import com.vpaliy.transition.AnimatedImageView;
 import com.vpaliy.transition.ImageState;
 import com.vpaliy.transition.TransitionAnimation;
 import com.vpaliy.transition.TransitionListener;
@@ -78,8 +82,8 @@ public class PreLollipopListActivity extends AppCompatActivity {
             if(runner!=null) {
                 runner.clearListeners();
                 runner.target(adapter.targetAt(currentPosition))
-                .duration(getResources().getInteger(R.integer.duration))
-                .replace(state).addListener(new TransitionListener() {
+                        .duration(getResources().getInteger(R.integer.duration))
+                        .replace(state).addListener(new TransitionListener() {
                     @Override
                     public void onAnimationStart(Animator animator) {
                         super.onAnimationStart(animator);
@@ -118,7 +122,7 @@ public class PreLollipopListActivity extends AppCompatActivity {
 
     private class ContentSliderAdapter extends PagerAdapter {
 
-        private SparseArray<ImageView> imageMap=new SparseArray<>();
+        private SparseArray<AnimatedImageView> imageMap=new SparseArray<>();
 
         private ArrayList<Integer> mediaFileList;
         private boolean hasAnimated=false;
@@ -137,13 +141,13 @@ public class PreLollipopListActivity extends AppCompatActivity {
         @Override
         public View instantiateItem(ViewGroup container, final int position) {
             //TODO fix the inflation here
-            final ImageView itemView=(ImageView)inflater.inflate(R.layout.slider_image,container,false);
-            itemView.setPivotY(0);itemView.setPivotX(0);
+            final AnimatedImageView itemView=(AnimatedImageView) inflater.inflate(R.layout.slider_image,container,false);
             container.addView(itemView);
+
             if(isPicasso) {
                 Picasso.with(itemView.getContext())
                         .load(mediaFileList.get(position % mediaFileList.size()))
-                        .fit().centerCrop().into(itemView,
+                        .fit().into(itemView,
                         checkForTransition(position)?new Callback() {
                             @Override
                             public void onSuccess() {
@@ -159,8 +163,8 @@ public class PreLollipopListActivity extends AppCompatActivity {
             }else {
                 Glide.with(itemView.getContext()).
                         load(mediaFileList.get(position % mediaFileList.size())).
-                        asBitmap().fitCenter().
-                        listener(checkForTransition(position)?new LoaderCallback<Integer, Bitmap>(itemView) {
+                        asBitmap().fitCenter().listener(checkForTransition(position)
+                                ?new LoaderCallback<Integer, Bitmap>(itemView) {
                             @Override
                             public void onReady(ImageView image) {
                                 startTransition(itemView);
@@ -173,12 +177,12 @@ public class PreLollipopListActivity extends AppCompatActivity {
             return itemView;
         }
 
-        public ImageView targetAt(int index) {
+        public AnimatedImageView targetAt(int index) {
             return imageMap.get(index);
         }
 
 
-        private void startTransition(final ImageView image) {
+        private void startTransition(final AnimatedImageView image) {
             hasAnimated=true;
             if(runner!=null) {
                 initAnimator(image);
@@ -189,7 +193,7 @@ public class PreLollipopListActivity extends AppCompatActivity {
             return !hasAnimated && position==startPosition;
         }
 
-        private void initAnimator(final ImageView image) {
+        private void initAnimator(final AnimatedImageView image) {
             runner.target(image).addListener(new TransitionListener() {
                 @Override
                 public void onAnimationStart(Animator animator) {

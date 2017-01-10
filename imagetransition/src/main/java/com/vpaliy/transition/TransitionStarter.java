@@ -26,7 +26,7 @@ public final class TransitionStarter {
         return new TransitionStarter(startActivity);
     }
 
-    public TransitionStarter from(@NonNull ImageView startImage) {
+    public TransitionStarter from(@NonNull AnimatedImageView startImage) {
         this.startImage=startImage;
         return this;
     }

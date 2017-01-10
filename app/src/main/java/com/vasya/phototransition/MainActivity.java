@@ -169,6 +169,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    //that's my implementation of trigger, you can customize it
     @Subscribe
     public void triggerVisibility(TriggerVisibility trigger) {
         ImageView image=(ImageView)(recyclerView.
@@ -177,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    //TODO find out why you need to redraw the layout
+
     @Subscribe
     public void requestForData(final CallbackRequest request) {
         recyclerView.scrollToPosition(request.requestedPosition());
@@ -186,8 +187,8 @@ public class MainActivity extends AppCompatActivity {
             public boolean onPreDraw() {
                 recyclerView.getViewTreeObserver().removeOnPreDrawListener(this);
                 recyclerView.requestLayout();
-                ImageView image=(ImageView)(recyclerView.findViewWithTag
-                    (ProjectUtils.TRANSITION_NAME(request.requestedPosition())));
+                final  ImageView image=(ImageView)(recyclerView.findViewWithTag
+                        (ProjectUtils.TRANSITION_NAME(request.requestedPosition())));
                 request.run(ImageState.newInstance(image));
                 return true;
             }
@@ -218,6 +219,9 @@ public class MainActivity extends AppCompatActivity {
             public ImageViewHolder(View itemView) {
                 super(itemView);
                 image=(DynamicImage)(itemView);
+                //for both native and custom transitions
+                //it's important to set a scale type if you want to make a transition to the image with different scale type
+                image.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 image.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -272,7 +276,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    private void launchSliderActivity(ArrayList<Integer> mediaFileList, ImageView image, int position) {
+    private void launchSliderActivity(ArrayList<Integer> mediaFileList, DynamicImage image, int position) {
         if(transitionChoice==LOLLIPOP_SLIDER) {
             if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP) {
                 Intent intent = new Intent(this, ListLollipopActivity.class);
@@ -296,7 +300,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void launchDetailsActivity(int resourceId,ImageView image, int position) {
+    private void launchDetailsActivity(int resourceId, DynamicImage image, int position) {
         if(transitionChoice==PRE_LOLLIPOP) {
             Intent intent=new Intent(this, PreLollipopActivity.class);
             intent.putExtra(ProjectUtils.DATA,resourceId);

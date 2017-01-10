@@ -31,11 +31,13 @@ public class TransitionRunner {
 
         int animationState = FINISHED;
 
+        ImageView.ScaleType previousScaleType=null;
+
         static final long DEFAULT_DURATION = 400L;
 
         ImageState prevState;
         ImageState currentState;
-        ImageView target;
+        AnimatedImageView target;
 
         int startPosition=-1;
 
@@ -80,6 +82,9 @@ public class TransitionRunner {
     }
 
     public TransitionRunner replace(@NonNull ImageState state) {
+        if(data.previousScaleType==null) {
+            data.previousScaleType = data.prevState.scaleType();
+        }
         data.prevState=state;
         return this;
     }
@@ -100,7 +105,7 @@ public class TransitionRunner {
         return new TransitionRunner(prevState);
     }
 
-    public TransitionRunner target(@NonNull ImageView target) {
+    public TransitionRunner target(@NonNull AnimatedImageView target) {
         data.target=target;
         data.target.setAdjustViewBounds(true);
         data.target.setPivotY(0);data.target.setPivotX(0); //may help prevent weird behavior
@@ -168,7 +173,7 @@ public class TransitionRunner {
         EventBusProvider.defaultBus().post(new CallbackRequest(position, callback));
     }
 
-    public void requestUpdate(int position, CallbackRequest.Callback callback, ImageView target) {
+    public void requestUpdate(int position, CallbackRequest.Callback callback, AnimatedImageView target) {
         data.startPosition=position;
         requestUpdate(position,callback);
         target(target);

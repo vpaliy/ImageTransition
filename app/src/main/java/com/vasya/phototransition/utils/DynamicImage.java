@@ -5,7 +5,9 @@ import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
-public class DynamicImage extends ImageView {
+import com.vpaliy.transition.AnimatedImageView;
+
+public class DynamicImage extends AnimatedImageView {
 
     private float heightRation=1.f;
 

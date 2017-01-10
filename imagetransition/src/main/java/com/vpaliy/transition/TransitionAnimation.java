@@ -1,14 +1,10 @@
 package com.vpaliy.transition;
 
 import android.animation.Animator;
-import android.graphics.drawable.Drawable;
-import android.util.Log;
 import android.view.ViewTreeObserver;
-
 import com.squareup.otto.Bus;
 import com.vpaliy.transition.eventBus.EventBusProvider;
 import com.vpaliy.transition.eventBus.TriggerVisibility;
-
 import java.util.List;
 
 
@@ -24,12 +20,33 @@ public abstract class TransitionAnimation {
         @Override
         public void runAnimation(final TransitionRunner.TransitionData data) {
             data.target.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+
                 @Override
                 public boolean onPreDraw() {
-                    data.listenerList.add(new Listener(data));
                     data.target.getViewTreeObserver().removeOnPreDrawListener(this);
-                    data.currentState= ImageState.newInstance(data.target);
-                    makeTransformation(data);
+                    data.currentState = ImageState.newInstance(data.target);
+
+                    final float scaleX=data.prevState.width()/data.currentState.width();
+                    final float scaleY=data.prevState.height()/data.currentState.height();
+
+                    final float deltaX=data.prevState.locationX()-data.currentState.locationX();
+                    final float deltaY=data.prevState.locationY()-data.currentState.locationY();
+
+                    data.target.setPivotX(0);
+                    data.target.setPivotY(0);
+
+                    data.target.setScaleX(scaleX);
+                    data.target.setScaleY(scaleY);
+
+                    data.target.setTranslationX(deltaX);
+                    data.target.setTranslationY(deltaY);
+
+
+                    if(data.target.getScaleType()!=data.prevState.scaleType()) {
+                        data.target.setTempScaleType(data.prevState.scaleType());
+                    }
+
+                    data.listenerList.add(new Listener(data));
 
                     data.target.animate()
                             .scaleX(1.f)
@@ -40,11 +57,10 @@ public abstract class TransitionAnimation {
                             .setDuration(data.animationDuration)
                             .setListener(provideListener(data.listenerList));
 
-                    return true;
+                return true;
                 }
             });
         }
-
 
     };
 
@@ -91,29 +107,27 @@ public abstract class TransitionAnimation {
 
     public static final TransitionAnimation EXIT=new TransitionAnimation() {
         @Override
-        public void runAnimation(TransitionRunner.TransitionData data) {
+        public void runAnimation(final TransitionRunner.TransitionData data) {
 
-            data.listenerList.add(new Listener(data));
 
-             float scaleX=data.prevState.width()/data.currentState.width();
-             float scaleY=data.prevState.height()/data.currentState.height();
-
+            float scaleX=data.prevState.width()/data.currentState.width();
+            float scaleY=data.prevState.height()/data.currentState.height();
 
             final float deltaX=data.prevState.locationX()-data.currentState.locationX();
             final float deltaY=data.prevState.locationY()-data.currentState.locationY();
 
 
             /* Just to make sure it has appropriate properties, otherwise you get a bad behavior */
-            if(data.animationState!= TransitionRunner.TransitionData.CANCELED) {
-                data.target.setPivotX(0);
-                data.target.setPivotY(0);
+            data.target.setPivotX(0);
+            data.target.setPivotY(0);
 
-                data.target.setScaleX(1.f);
-                data.target.setScaleY(1.f);
+            data.target.setScaleX(1.f);
+            data.target.setScaleY(1.f);
 
-                data.target.setTranslationX(0f);
-                data.target.setTranslationY(0f);
-            }
+            data.target.setTranslationX(0f);
+            data.target.setTranslationY(0f);
+
+            data.listenerList.add(new Listener(data));
 
             data.target.animate()
                     .scaleX(scaleX)
@@ -129,29 +143,9 @@ public abstract class TransitionAnimation {
         }
     };
 
-
-    private static void makeTransformation(TransitionRunner.TransitionData data) {
-
-        final float scaleX=data.prevState.width()/data.currentState.width();
-        final float scaleY=data.prevState.height()/data.currentState.height();
-
-        final float deltaX=data.prevState.locationX()-data.currentState.locationX();
-        final float deltaY=data.prevState.locationY()-data.currentState.locationY();
-
-        data.target.setPivotX(0);
-        data.target.setPivotY(0);
-
-        data.target.setScaleX(scaleX);
-        data.target.setScaleY(scaleY);
-
-        data.target.setTranslationX(deltaX);
-        data.target.setTranslationY(deltaY);
-
-
-    }
-
     private static class Listener extends TransitionListener {
 
+        private Animator matrixAnimator;
         private TransitionRunner.TransitionData data;
         private Bus eventBus=EventBusProvider.defaultBus();
 
@@ -160,8 +154,23 @@ public abstract class TransitionAnimation {
         }
 
         @Override
+        public void onAnimationCancel(Animator animator) {
+            super.onAnimationCancel(animator);
+            if(matrixAnimator!=null) {
+                matrixAnimator.cancel();    //cancel matrix
+            }
+        }
+
+        @Override
         public void onAnimationStart(Animator animator) {
             super.onAnimationStart(animator);
+            if(data.previousScaleType!=null||data.prevState.scaleType()!=data.currentState.scaleType()) {
+                data.target.setAnimDuration(data.animationDuration);
+                data.target.setInterpolator(data.interpolator);
+                matrixAnimator=data.target.animateToScaleType(data.previousScaleType != null
+                        ? data.previousScaleType : data.currentState.scaleType());
+                matrixAnimator.start();
+            }
             if(data.startPosition>0) {
                 eventBus.post(new TriggerVisibility(data.startPosition,false));
             }
