@@ -50,7 +50,6 @@ For instance, you have 2 activities `A` and `B`, and both of them share the same
       Glide.with(this)
                     .load(resource)
                     .asBitmap()
-                    .thumbnail(0.2f)    //to make the loading of image faster
                     .centerCrop()
                     //to prevent the animation from shuddering, use the listener to track when the image is ready,
                     // otherwise you may start the animation when the resource hasn't been loaded yet
