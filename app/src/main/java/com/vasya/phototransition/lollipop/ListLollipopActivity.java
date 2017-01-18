@@ -120,7 +120,7 @@ public class ListLollipopActivity extends AppCompatActivity {
             if(isPicasso) {
                 Picasso.with(itemView.getContext())
                     .load(mediaFileList.get(position % mediaFileList.size()))
-                    .fit().into(itemView,
+                    .fit().centerCrop().into(itemView,
                         checkForTransition(position)? new Callback() {
                     @Override
                     public void onSuccess() {
@@ -136,7 +136,7 @@ public class ListLollipopActivity extends AppCompatActivity {
             }else {
                 Glide.with(itemView.getContext()).
                         load(mediaFileList.get(position % mediaFileList.size())).
-                        asBitmap().fitCenter().
+                        asBitmap().centerCrop().
                         listener(checkForTransition(position)?new LoaderCallback<Integer, Bitmap>(itemView) {
                             @Override
                             public void onReady(ImageView image) {
