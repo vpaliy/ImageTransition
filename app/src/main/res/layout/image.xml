@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.vasya.phototransition.utils.DynamicImage
+<com.vasya.phototransition.utils.SquareImage
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:background="@drawable/border"
+    android:scaleType="centerCrop"
     android:layout_width="match_parent"
     android:layout_height="match_parent"/>

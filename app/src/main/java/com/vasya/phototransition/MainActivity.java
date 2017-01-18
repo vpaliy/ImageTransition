@@ -30,8 +30,8 @@ import com.vasya.phototransition.lollipop.ListLollipopActivity;
 import com.vasya.phototransition.lollipop.LollipopActivity;
 import com.vasya.phototransition.prelollipop.PreLollipopActivity;
 import com.vasya.phototransition.prelollipop.PreLollipopListActivity;
-import com.vasya.phototransition.utils.DynamicImage;
 import com.vasya.phototransition.utils.ProjectUtils;
+import com.vpaliy.transition.AnimatedImageView;
 import com.vpaliy.transition.ImageState;
 import com.vpaliy.transition.TransitionStarter;
 import com.vpaliy.transition.eventBus.CallbackRequest;
@@ -214,11 +214,11 @@ public class MainActivity extends AppCompatActivity {
 
         public class ImageViewHolder extends RecyclerView.ViewHolder {
 
-            private DynamicImage image;
+            private AnimatedImageView image;
 
             public ImageViewHolder(View itemView) {
                 super(itemView);
-                image=(DynamicImage)(itemView);
+                image=(AnimatedImageView) (itemView);
                 //for both native and custom transitions
                 //it's important to set a scale type if you want to make a transition to the image with different scale type
                 image.setScaleType(ImageView.ScaleType.CENTER_CROP);
@@ -276,7 +276,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    private void launchSliderActivity(ArrayList<Integer> mediaFileList, DynamicImage image, int position) {
+    private void launchSliderActivity(ArrayList<Integer> mediaFileList, AnimatedImageView image, int position) {
         if(transitionChoice==LOLLIPOP_SLIDER) {
             if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP) {
                 Intent intent = new Intent(this, ListLollipopActivity.class);
@@ -300,7 +300,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void launchDetailsActivity(int resourceId, DynamicImage image, int position) {
+    private void launchDetailsActivity(int resourceId, AnimatedImageView image, int position) {
         if(transitionChoice==PRE_LOLLIPOP) {
             Intent intent=new Intent(this, PreLollipopActivity.class);
             intent.putExtra(ProjectUtils.DATA,resourceId);

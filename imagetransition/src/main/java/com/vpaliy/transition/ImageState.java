@@ -4,7 +4,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.widget.ImageView;
 
-
 public class ImageState implements Parcelable {
 
     private static final String TAG=ImageState.class.getSimpleName();

@@ -1,25 +1,18 @@
 package com.vasya.phototransition.prelollipop;
 
-import android.animation.Animator;
-import android.animation.ObjectAnimator;
+
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.Target;
 import com.vasya.phototransition.R;
 import com.vasya.phototransition.utils.LoaderCallback;
 import com.vasya.phototransition.utils.ProjectUtils;
@@ -28,7 +21,6 @@ import com.squareup.picasso.Picasso;
 import com.vpaliy.transition.AnimatedImageView;
 import com.vpaliy.transition.ImageState;
 import com.vpaliy.transition.TransitionAnimation;
-import com.vpaliy.transition.TransitionListener;
 import com.vpaliy.transition.TransitionRunner;
 import com.vpaliy.transition.eventBus.CallbackRequest;
 
@@ -40,10 +32,7 @@ public class PreLollipopListActivity extends AppCompatActivity {
 
     private int startPosition;
     private int currentPosition=-1;
-    private ViewPager pager;
     private TransitionRunner runner;
-    private ColorDrawable background=new ColorDrawable(Color.BLACK);
-    private ObjectAnimator backgroundAnimator;
     private boolean isPicasso;
     private ContentSliderAdapter adapter;
 
@@ -64,7 +53,7 @@ public class PreLollipopListActivity extends AppCompatActivity {
         startPosition=args.getInt(ProjectUtils.START_POSITION);
 
 
-        pager=(ViewPager)(findViewById(R.id.slider));
+        ViewPager pager=(ViewPager)(findViewById(R.id.slider));
         pager.setAdapter(adapter=new ContentSliderAdapter(mediaFileList));
         pager.setCurrentItem(startPosition);
         pager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
@@ -80,25 +69,10 @@ public class PreLollipopListActivity extends AppCompatActivity {
         @Override
         public void onFetched(ImageState state) {
             if(runner!=null) {
-                runner.clearListeners();
                 runner.target(adapter.targetAt(currentPosition))
                         .duration(getResources().getInteger(R.integer.duration))
-                        .replace(state).addListener(new TransitionListener() {
-                    @Override
-                    public void onAnimationStart(Animator animator) {
-                        super.onAnimationStart(animator);
-                        backgroundAnimator.setDuration(animator.getDuration());
-                        backgroundAnimator.reverse();
-                    }
-
-                    @Override
-                    public void onAnimationEnd(Animator animator) {
-                        super.onAnimationEnd(animator);
-                        finish();
-                        overridePendingTransition(0,0);
-                    }
-                }).run(TransitionAnimation.EXIT);
-
+                        .replace(state)
+                        .runAway(TransitionAnimation.EXIT,PreLollipopListActivity.this);
             }
         }
     };
@@ -114,11 +88,6 @@ public class PreLollipopListActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void finish() {
-        super.finish();
-        overridePendingTransition(0,0);
-    }
 
     private class ContentSliderAdapter extends PagerAdapter {
 
@@ -147,7 +116,7 @@ public class PreLollipopListActivity extends AppCompatActivity {
             if(isPicasso) {
                 Picasso.with(itemView.getContext())
                         .load(mediaFileList.get(position % mediaFileList.size()))
-                        .fit().into(itemView,
+                        .centerCrop().into(itemView,
                         checkForTransition(position)?new Callback() {
                             @Override
                             public void onSuccess() {
@@ -163,8 +132,7 @@ public class PreLollipopListActivity extends AppCompatActivity {
             }else {
                 Glide.with(itemView.getContext()).
                         load(mediaFileList.get(position % mediaFileList.size())).
-                        asBitmap().fitCenter().listener(checkForTransition(position)
-                                ?new LoaderCallback<Integer, Bitmap>(itemView) {
+                        asBitmap().centerCrop().listener(checkForTransition(position) ? new LoaderCallback<Integer, Bitmap>(itemView) {
                             @Override
                             public void onReady(ImageView image) {
                                 startTransition(itemView);
@@ -194,25 +162,10 @@ public class PreLollipopListActivity extends AppCompatActivity {
         }
 
         private void initAnimator(final AnimatedImageView image) {
-            runner.target(image).addListener(new TransitionListener() {
-                @Override
-                public void onAnimationStart(Animator animator) {
-                    super.onAnimationStart(animator);
-                    ViewGroup parent=(ViewGroup)(image.getParent());
-                    parent.setBackgroundDrawable(background);
-                    backgroundAnimator= ObjectAnimator.ofInt(background,"alpha",0,255);
-                    backgroundAnimator.setDuration(animator.getDuration());
-                    backgroundAnimator.setInterpolator(new DecelerateInterpolator());
-                    backgroundAnimator.start();
-                }
-
-                @Override
-                public void onAnimationEnd(Animator animator) {
-                    super.onAnimationEnd(animator);
-
-                }
-            }).duration(getResources().getInteger(R.integer.duration));
-            runner.run(TransitionAnimation.ENTER);
+            ViewGroup container=(ViewGroup)image.getParent();
+            runner.target(image).fadeContainer(container)
+                .duration(getResources().getInteger(R.integer.duration))
+                .run(TransitionAnimation.ENTER);
         }
 
 

@@ -10,7 +10,6 @@ import android.graphics.Matrix;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.widget.ImageView;
-
 import java.util.Arrays;
 
 public class AnimatedImageView extends ImageView {
@@ -105,11 +104,8 @@ public class AnimatedImageView extends ImageView {
 
                 currValues[Matrix.MTRANS_X] = srcValues[Matrix.MTRANS_X] + transX * value;
                 currValues[Matrix.MTRANS_Y] = srcValues[Matrix.MTRANS_Y] + transY * value;
-                // if(Math.abs(currValues[Matrix.MTRANS_Y]-destValues[Matrix.MTRANS_Y])>=0.001f
-                //    && Math.abs(currValues[Matrix.MTRANS_X]-destValues[Matrix.MTRANS_X])>=0.001f) {
                 currValues[Matrix.MSCALE_X] = srcValues[Matrix.MSCALE_X] + scaleX * value;
                 currValues[Matrix.MSCALE_Y] = srcValues[Matrix.MSCALE_Y] + scaleY * value;
-                //   }
                 currValues[Matrix.MSKEW_X]= srcValues[Matrix.MSKEW_X] + skewX * value;
                 currValues[Matrix.MSKEW_Y]= srcValues[Matrix.MSKEW_Y] + skewY * value;
                 currValues[Matrix.MPERSP_0] = srcValues[Matrix.MPERSP_0] + pres0 * value;

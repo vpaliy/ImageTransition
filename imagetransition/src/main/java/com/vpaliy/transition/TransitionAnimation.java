@@ -1,7 +1,10 @@
 package com.vpaliy.transition;
 
 import android.animation.Animator;
+import android.animation.ObjectAnimator;
+import android.graphics.drawable.ColorDrawable;
 import android.view.ViewTreeObserver;
+
 import com.squareup.otto.Bus;
 import com.vpaliy.transition.eventBus.EventBusProvider;
 import com.vpaliy.transition.eventBus.TriggerVisibility;
@@ -25,6 +28,21 @@ public abstract class TransitionAnimation {
                 public boolean onPreDraw() {
                     data.target.getViewTreeObserver().removeOnPreDrawListener(this);
                     data.currentState = ImageState.newInstance(data.target);
+
+                    if(data.container!=null) {
+                        data.listenerList.add(new TransitionListener() {
+                            @Override
+                            public void onAnimationStart(Animator animator) {
+                                super.onAnimationStart(animator);
+                                ColorDrawable background=new ColorDrawable(data.colorRGB);
+                                data.container.setBackgroundDrawable(background);
+                                ObjectAnimator backgroundAnimator=ObjectAnimator.ofInt(background,"alpha",0,255);
+                                backgroundAnimator.setDuration(data.animationDuration);
+                                backgroundAnimator.setInterpolator(data.interpolator);
+                                backgroundAnimator.start();
+                            }
+                        });
+                    }
 
                     final float scaleX=data.prevState.width()/data.currentState.width();
                     final float scaleY=data.prevState.height()/data.currentState.height();
@@ -57,7 +75,7 @@ public abstract class TransitionAnimation {
                             .setDuration(data.animationDuration)
                             .setListener(provideListener(data.listenerList));
 
-                return true;
+                    return true;
                 }
             });
         }
@@ -115,6 +133,21 @@ public abstract class TransitionAnimation {
 
             final float deltaX=data.prevState.locationX()-data.currentState.locationX();
             final float deltaY=data.prevState.locationY()-data.currentState.locationY();
+
+            if(data.container!=null) {
+                data.listenerList.add(new TransitionListener() {
+                    @Override
+                    public void onAnimationStart(Animator animator) {
+                        super.onAnimationStart(animator);
+                        ColorDrawable background=new ColorDrawable(data.colorRGB);
+                        data.container.setBackgroundDrawable(background);
+                        ObjectAnimator backgroundAnimator=ObjectAnimator.ofInt(background,"alpha",255,0);
+                        backgroundAnimator.setDuration(data.animationDuration);
+                        backgroundAnimator.setInterpolator(data.interpolator);
+                        backgroundAnimator.start();
+                    }
+                });
+            }
 
 
             /* Just to make sure it has appropriate properties, otherwise you get a bad behavior */

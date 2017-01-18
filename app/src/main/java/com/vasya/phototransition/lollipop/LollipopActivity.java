@@ -1,4 +1,5 @@
 package com.vasya.phototransition.lollipop;
+
 import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -13,7 +14,6 @@ import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
-
 import com.bumptech.glide.Glide;
 import com.vasya.phototransition.R;
 import com.vasya.phototransition.utils.LoaderCallback;

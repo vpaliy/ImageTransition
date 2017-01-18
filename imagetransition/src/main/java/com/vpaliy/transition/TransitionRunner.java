@@ -3,19 +3,22 @@ package com.vpaliy.transition;
 import android.animation.Animator;
 import android.animation.TimeInterpolator;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
-
 import com.vpaliy.transition.eventBus.CallbackRequest;
 import com.vpaliy.transition.eventBus.EventBusProvider;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 
 public class TransitionRunner {
 
@@ -30,6 +33,10 @@ public class TransitionRunner {
         static final int CANCELED=0;
 
         int animationState = FINISHED;
+
+        View container;
+
+        int colorRGB=Color.BLACK;
 
         ImageView.ScaleType previousScaleType=null;
 
@@ -97,7 +104,7 @@ public class TransitionRunner {
         return new TransitionRunner(state,args.getInt(TransitionStarter.START_POSITION,-1));
     }
 
-     public static TransitionRunner with(@NonNull Intent intent) {
+    public static TransitionRunner with(@NonNull Intent intent) {
         return with(intent.getExtras());
     }
 
@@ -108,7 +115,7 @@ public class TransitionRunner {
     public TransitionRunner target(@NonNull AnimatedImageView target) {
         data.target=target;
         data.target.setAdjustViewBounds(true);
-        data.target.setPivotY(0);data.target.setPivotX(0); //may help prevent weird behavior
+       // data.target.setPivotY(0);data.target.setPivotX(0); //may help prevent weird behavior
         data.currentState= ImageState.newInstance(target);
         return this;
     }
@@ -137,6 +144,16 @@ public class TransitionRunner {
     public TransitionRunner clearListeners() {
         data.listenerList=null;
         return this;
+    }
+
+    public TransitionRunner fadeContainer(@NonNull  ViewGroup container, int color) {
+        this.data.container=container;
+        this.data.colorRGB=color;
+        return this;
+    }
+
+    public TransitionRunner fadeContainer(@NonNull ViewGroup container) {
+        return fadeContainer(container,Color.BLACK);
     }
 
     public TransitionRunner addListener(TransitionListener... listeners) {
@@ -168,6 +185,23 @@ public class TransitionRunner {
         animationInstance.runAnimation(data);
     }
 
+    public void runAway(TransitionAnimation animationInstance, final Activity activity) {
+        if(isRunning()) {
+            if (Build.VERSION.SDK_INT < 14)
+                return; //the user should wait, until the enter animation finishes
+            cancel();
+        }
+        addListener(new TransitionListener() {
+            @Override
+            public void onAnimationEnd(Animator animator) {
+                super.onAnimationEnd(animator);
+                activity.finish();
+                activity.overridePendingTransition(0,0);
+            }
+        });
+        animationInstance.runAnimation(data);
+    }
+
     public void requestUpdate(int position, CallbackRequest.Callback callback) {
         data.startPosition = position;
         EventBusProvider.defaultBus().post(new CallbackRequest(position, callback));
@@ -178,5 +212,4 @@ public class TransitionRunner {
         requestUpdate(position,callback);
         target(target);
     }
-
 }
