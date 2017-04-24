@@ -73,22 +73,14 @@ Basically, there are only four main abstractions you need to deal with: `Animate
                     .centerCrop()
                     //to prevent the animation from shuddering, use the listener to track when the image is ready,
                     // otherwise you may start the animation when the resource hasn't been loaded yet
-                    .listener(new RequestListener<File, Bitmap>() {
-                        @Override
-                        public boolean onException(Exception e, File model, Target<Bitmap> target, boolean isFirstResource) {
-                            return false;
-                        }
-
-                        //when the image has been loaded, start the transition
-                        @Override
-                        public boolean onResourceReady(Bitmap resource, File model, Target<Bitmap> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                            if(isFirstResource) {
-                                startTransition(getIntent(),image); //pass the data and your image
-                            }
-                            return false; 
-                        }
-                    })
-                    .into(image);
+                    .into(new ImageViewTarget<Bitmap>(movieImage) {
+                      @Override
+                      protected void setResource(Bitmap resource) {
+                        image.setImageBitmap(resource);
+                         startTransition(getIntent(),image); //pass the data and your image
+                      }
+                     });
+                 
  ```
  
 * Finally, after the resource has been loaded into the `ImageView`, you can use the`TransitionRunner` and run that transition.
