@@ -73,10 +73,10 @@ Basically, there are only four main abstractions you need to deal with: `Animate
                     .centerCrop()
                     //to prevent the animation from shuddering, use the listener to track when the image is ready,
                     // otherwise you may start the animation when the resource hasn't been loaded yet
-                    .into(new ImageViewTarget<Bitmap>(movieImage) {
-                      @Override
-                      protected void setResource(Bitmap resource) {
-                        image.setImageBitmap(resource);
+                    .into(new ImageViewTarget<Bitmap>(image) {
+                       @Override
+                       protected void setResource(Bitmap resource) {
+                         image.setImageBitmap(resource);
                          startTransition(getIntent(),image); //pass the data and your image
                       }
                      });
