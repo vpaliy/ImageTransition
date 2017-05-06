@@ -1,12 +1,12 @@
 # ImageTransition
 [![API](https://img.shields.io/badge/API-12%2B-blue.svg?style=flat)](https://android-arsenal.com/api?level=12) 
 
-This project provides a library for making transitions between the activities with shared images.
+This project provides a library for making transitions between activities with shared images.
 
 # Simple example #
 ![](https://github.com/vpaliyX/ImageTransition/blob/master/art/ezgif.com-video-to-gif%20(4).gif)
 
-Please check out a [video](https://www.youtube.com/watch?v=ybzTDJHUrSo) with the same sample, there it goes more smoothly.
+Please check out a [video](https://www.youtube.com/watch?v=ybzTDJHUrSo) with the same sample, there it runs more smoothly.
 
 # How do I use a shared element transition? #
 Basically, there are only four main abstractions you need to deal with: `AnimatedImageView`,`TransitionStarter`, `TransitionRunner` and `TransitionAnimation`. If you want to implement this transition on pre-lollipop devices, you have to use `AnimatedImageView` or its subclasses, in order to share the images with different scale type, otherwise you get undesired behaviour.<br>
@@ -42,7 +42,7 @@ Basically, there are only four main abstractions you need to deal with: `Animate
        //however, it has to have the same parameter and annotation
     @Subscribe
     public void triggerVisibility(TriggerVisibility trigger) {
-        ImageView image=(ImageView)(recyclerView.
+        ImageView image=ImageView.class.cast(recyclerView.
                 findViewWithTag(ProjectUtils.TRANSITION_NAME(trigger.requestedPosition())));
         image.setVisibility(trigger.isVisible()?View.VISIBLE:View.INVISIBLE);
     }
@@ -88,7 +88,7 @@ Basically, there are only four main abstractions you need to deal with: `Animate
   ```java
       private void startTransition(Intent intent, AnimatedImageView targetImage){
            //in order to animate a transition backwards when an activity finishes, save created instance as a global variable
-        ViewGroup container=(ViewGroup)(image.getParent()); //pull out the container 
+        ViewGroup container=ViewGroup.class.cast(image.getParent()); //pull out the container 
         runner = TransitionRunner.with(intent)
             .target(targetImage)
             .fadeContainer(container)
@@ -102,7 +102,7 @@ Basically, there are only four main abstractions you need to deal with: `Animate
  ```java
       private void startTransition(Intent intent, AnimatedImageView targetImage){
            //in order to animate a transition backwards when an activity finishes, save created instance as a global variable
-        ViewGroup container=(ViewGroup)(image.getParent()); //pull out the container 
+        ViewGroup container=ViewGroup.class.cast(image.getParent()); //pull out the container 
         runner = TransitionRunner.with(intent).
             target(targetImage)
               .fadeContainer(container) //default color is black
@@ -146,7 +146,7 @@ Basically, there are only four main abstractions you need to deal with: `Animate
 ``````
 MIT License
 
-Copyright (c) 2016 Vasyl Paliy
+Copyright (c) 2017 Vasyl Paliy
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
