@@ -2,7 +2,7 @@
 <resources>
 
     <!-- Details Theme which supports shared element transitions. -->
-    <style name="DetailsTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="LollipopDetailsTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Set up the transition mode -->
 
         <item name="android:windowActivityTransitions">true</item>

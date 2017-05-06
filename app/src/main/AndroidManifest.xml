@@ -33,12 +33,12 @@
 
         <activity
             android:name=".activity.LollipopActivity"
-            android:theme="@style/AppTheme">
+            android:theme="@style/LollipopDetailsTheme">
         </activity>
 
         <activity
             android:name=".activity.ListLollipopActivity"
-            android:theme="@style/AppTheme">
+            android:theme="@style/LollipopDetailsTheme">
         </activity>
 
         <activity
