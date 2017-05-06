@@ -1,8 +1,5 @@
 package com.vasya.phototransition.activity;
 
-import android.annotation.TargetApi;
-import android.support.annotation.Nullable;
-import butterknife.BindView;
 import android.app.SharedElementCallback;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -10,16 +7,10 @@ import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.transition.ChangeBounds;
-import android.transition.ChangeClipBounds;
-import android.transition.ChangeImageTransform;
-import android.transition.TransitionSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.view.Window;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.ImageViewTarget;
@@ -29,6 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import butterknife.ButterKnife;
+
+import android.annotation.TargetApi;
+import android.support.annotation.Nullable;
+import butterknife.BindView;
 
 @TargetApi(21)
 public class ListLollipopActivity extends AppCompatActivity {
@@ -42,7 +37,6 @@ public class ListLollipopActivity extends AppCompatActivity {
     private boolean isReturning=false;
     private int startPosition;
     private int currentPosition=-1;
-    private boolean isPicasso;
 
 
     @Override
@@ -78,8 +72,6 @@ public class ListLollipopActivity extends AppCompatActivity {
     }
 
     private void setUI(Bundle args) {
-
-        isPicasso=args.getBoolean(Constants.PICASSO);
         mediaFileList=args.getIntegerArrayList(Constants.DATA);
         startPosition=args.getInt(Constants.START_POSITION);
         pager=(ViewPager)(findViewById(R.id.slider));
@@ -111,7 +103,6 @@ public class ListLollipopActivity extends AppCompatActivity {
         outState.putSerializable(Constants.DATA,mediaFileList);
         outState.putInt(Constants.START_POSITION,startPosition);
         outState.putInt(Constants.CURRENT_POSITION,currentPosition);
-        outState.putBoolean(Constants.PICASSO,isPicasso);
     }
 
     private class ContentSliderAdapter extends PagerAdapter {
@@ -192,32 +183,4 @@ public class ListLollipopActivity extends AppCompatActivity {
 
     }
 
-
-    @TargetApi(21)
-    private void requestFeature() {
-        getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
-        TransitionSet set=new TransitionSet();
-        set.addTransition(new ChangeBounds());
-        set.addTransition(new ChangeClipBounds());
-        set.addTransition(new ChangeImageTransform());
-        set.setDuration(getResources().getInteger(R.integer.duration));
-        set.setInterpolator(new DecelerateInterpolator());
-        getWindow().setSharedElementEnterTransition(set);
-        getWindow().setSharedElementsUseOverlay(false);
-
-        setEnterSharedElementCallback(new SharedElementCallback() {
-            @Override
-            public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
-                if (isReturning) {
-                    View sharedElement =pager.findViewWithTag(Constants.TRANSITION_NAME(currentPosition));
-                    if (startPosition != currentPosition) {
-                        names.clear();
-                        names.add(sharedElement.getTransitionName());
-                        sharedElements.clear();
-                        sharedElements.put(sharedElement.getTransitionName(), sharedElement);
-                    }
-                }
-            }
-        });
-    }
 }

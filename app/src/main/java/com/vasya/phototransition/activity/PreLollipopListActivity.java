@@ -3,7 +3,6 @@ package com.vasya.phototransition.activity;
 
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -11,35 +10,35 @@ import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.ImageViewTarget;
 import com.vasya.phototransition.R;
-import com.vasya.phototransition.utils.LoaderCallback;
 import com.vasya.phototransition.utils.Constants;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
 import com.vpaliy.transition.AnimatedImageView;
 import com.vpaliy.transition.ImageState;
 import com.vpaliy.transition.TransitionAnimation;
 import com.vpaliy.transition.TransitionRunner;
 import com.vpaliy.transition.eventBus.CallbackRequest;
-
 import java.util.ArrayList;
+import android.support.annotation.Nullable;
+
+import butterknife.ButterKnife;
+
 
 public class PreLollipopListActivity extends AppCompatActivity {
 
-    private static final String TAG=PreLollipopListActivity.class.getSimpleName();
 
     private int startPosition;
     private int currentPosition=-1;
+
     private TransitionRunner runner;
-    private boolean isPicasso;
     private ContentSliderAdapter adapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.slider_layout);
+
         if(savedInstanceState==null)
             savedInstanceState=getIntent().getExtras();
         initUI(savedInstanceState);
@@ -47,13 +46,12 @@ public class PreLollipopListActivity extends AppCompatActivity {
     }
 
     private void initUI(Bundle args) {
-        isPicasso=args.getBoolean(Constants.PICASSO);
         runner=TransitionRunner.with(args);
         ArrayList<Integer> mediaFileList=args.getIntegerArrayList(Constants.DATA);
         startPosition=args.getInt(Constants.START_POSITION);
 
 
-        ViewPager pager=(ViewPager)(findViewById(R.id.slider));
+        ViewPager pager= ButterKnife.findById(this,R.id.slider);
         pager.setAdapter(adapter=new ContentSliderAdapter(mediaFileList));
         pager.setCurrentItem(startPosition);
         pager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
@@ -109,40 +107,25 @@ public class PreLollipopListActivity extends AppCompatActivity {
 
         @Override
         public View instantiateItem(ViewGroup container, final int position) {
-            //TODO fix the inflation here
-            final AnimatedImageView itemView=(AnimatedImageView) inflater.inflate(R.layout.slider_image,container,false);
-            container.addView(itemView);
-
-            if(isPicasso) {
-                Picasso.with(itemView.getContext())
-                        .load(mediaFileList.get(position % mediaFileList.size()))
-                        .centerCrop().into(itemView,
-                        checkForTransition(position)?new Callback() {
+            final AnimatedImageView image=AnimatedImageView.class.cast(inflater.inflate(R.layout.slider_image,container,false));
+            container.addView(image);
+                Glide.with(image.getContext()).
+                        load(mediaFileList.get(position % mediaFileList.size()))
+                        .asBitmap()
+                        .centerCrop()
+                        .into(new ImageViewTarget<Bitmap>(image) {
                             @Override
-                            public void onSuccess() {
-                                startTransition(itemView);
-                            }
+                            protected void setResource(Bitmap resource) {
+                                image.setImageBitmap(resource);
+                                if(checkForTransition(position)){
+                                    startTransition(image);
+                                }
 
-                            @Override
-                            public void onError() {
-                                startTransition(itemView);
                             }
-                        }:null);
-
-            }else {
-                Glide.with(itemView.getContext()).
-                        load(mediaFileList.get(position % mediaFileList.size())).
-                        asBitmap().centerCrop().listener(checkForTransition(position) ? new LoaderCallback<Integer, Bitmap>(itemView) {
-                            @Override
-                            public void onReady(ImageView image) {
-                                startTransition(itemView);
-                            }
-                        }:null).into(itemView);
-            }
-
-            imageMap.put(position,itemView);
-            itemView.setTag(Constants.TRANSITION_NAME(position));
-            return itemView;
+                        });
+            imageMap.put(position,image);
+            image.setTag(Constants.TRANSITION_NAME(position));
+            return image;
         }
 
         public AnimatedImageView targetAt(int index) {
@@ -162,10 +145,11 @@ public class PreLollipopListActivity extends AppCompatActivity {
         }
 
         private void initAnimator(final AnimatedImageView image) {
-            ViewGroup container=(ViewGroup)image.getParent();
-            runner.target(image).fadeContainer(container)
-                .duration(getResources().getInteger(R.integer.duration))
-                .run(TransitionAnimation.ENTER);
+            ViewGroup container=ViewGroup.class.cast(image.getParent());
+            runner.target(image)
+                    .fadeContainer(container)
+                    .duration(getResources().getInteger(R.integer.duration))
+                    .run(TransitionAnimation.ENTER);
         }
 
 

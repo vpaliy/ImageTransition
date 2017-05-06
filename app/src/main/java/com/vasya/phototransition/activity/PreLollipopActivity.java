@@ -4,62 +4,62 @@ package com.vasya.phototransition.activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.ImageViewTarget;
 import com.vasya.phototransition.R;
-import com.vasya.phototransition.utils.LoaderCallback;
 import com.vasya.phototransition.utils.Constants;
 import com.vpaliy.transition.AnimatedImageView;
 import com.vpaliy.transition.TransitionAnimation;
 import com.vpaliy.transition.TransitionRunner;
+import android.support.annotation.Nullable;
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 
 public class PreLollipopActivity extends AppCompatActivity {
 
-    private static final String TAG=PreLollipopActivity.class.getSimpleName();
 
     private TransitionRunner runner;
+
+    @BindView(R.id.image)
+    protected AnimatedImageView image;
 
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.details_layout);
-
+        ButterKnife.bind(this);
         if(savedInstanceState==null) {
             savedInstanceState = getIntent().getExtras();
         }
 
-        final AnimatedImageView animatedImageView=(AnimatedImageView) (findViewById(R.id.image));
-        final int resourceId=savedInstanceState.getInt(Constants.DATA,-1);
-
-        if(resourceId>0){
-            Glide.with(this)
-                    .load(resourceId)
-                    .asBitmap()
-                    .centerCrop()
-                    //to prevent the animation from shuddering, use the listener to track when the image is ready,
-                    // otherwise you may start the animation when the resource hasn't been loaded yet
-                    .listener(new LoaderCallback<Integer, Bitmap>(animatedImageView) {
-                        @Override
-                        public void onReady(ImageView image) {
-                            if(getIntent()!=null) {
-                                initAnimator(getIntent(), animatedImageView);
-                            }
-                        }
-                    })
-                    .into(animatedImageView);
-        }
+        loadImage(savedInstanceState.getInt(Constants.DATA,-1));
     }
 
+    private void loadImage(int resourceId){
+        Glide.with(this)
+                .load(resourceId)
+                .asBitmap()
+                .centerCrop()
+                .into(new ImageViewTarget<Bitmap>(image) {
+                    @Override
+                    protected void setResource(Bitmap resource) {
+                        image.setImageBitmap(resource);
+                        initAnimator(getIntent(),image);
+                    }
+                });
+    }
+
+
     private void initAnimator(final Intent intent, final AnimatedImageView image) {
-        ViewGroup container=(ViewGroup)(image.getParent());
-        runner = TransitionRunner.with(intent).
-            target(image).fadeContainer(container)
-            .duration(getResources().getInteger(R.integer.duration));
+        ViewGroup container=ViewGroup.class.cast(image.getParent());
+        runner = TransitionRunner.with(intent)
+                .target(image)
+                .fadeContainer(container)
+                .duration(getResources().getInteger(R.integer.duration));
         runner.run(TransitionAnimation.ENTER);
     }
 

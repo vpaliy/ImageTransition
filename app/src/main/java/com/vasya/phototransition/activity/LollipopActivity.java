@@ -1,71 +1,57 @@
 package com.vasya.phototransition.activity;
 
-import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.transition.ChangeBounds;
-import android.transition.ChangeClipBounds;
-import android.transition.ChangeImageTransform;
-import android.transition.TransitionSet;
 import android.view.MenuItem;
 import android.view.ViewTreeObserver;
-import android.view.Window;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.ImageViewTarget;
 import com.vasya.phototransition.R;
-import com.vasya.phototransition.utils.LoaderCallback;
 import com.vasya.phototransition.utils.Constants;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
+import android.support.annotation.Nullable;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
+import android.annotation.TargetApi;
 
 @TargetApi(21)
 public class LollipopActivity extends AppCompatActivity {
 
+    @BindView(R.id.image)
+    protected ImageView image;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        requestFeature();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.details_layout);
-        postponeEnterTransition();  //postpone the transition
+        ButterKnife.bind(this);
         if (savedInstanceState == null) {
             savedInstanceState = getIntent().getExtras();
         }
 
-        final ImageView image = (ImageView) (findViewById(R.id.image));
-        final int resourceId = savedInstanceState.getInt(Constants.DATA,-1);
-        final String transitionName = savedInstanceState.getString(Constants.KEY);
-        final boolean isPicasso=savedInstanceState.getBoolean(Constants.PICASSO);
+        int resourceId = savedInstanceState.getInt(Constants.DATA,-1);
+        String transitionName = savedInstanceState.getString(Constants.KEY);
 
+        loadImage(resourceId,transitionName);
+
+
+    }
+
+    private void loadImage(int resourceId, String transitionName){
+        postponeEnterTransition();  //postpone the transition
         image.setTransitionName(transitionName);
-        if(resourceId>0){
-            if(isPicasso) {
-                Picasso.with(this).load(resourceId)
-                        .fit().centerCrop().into(image, new Callback() {
+        Glide.with(this)
+                .load(resourceId).asBitmap()
+                .centerCrop()
+                .into(new ImageViewTarget<Bitmap>(image) {
                     @Override
-                    public void onSuccess() {
-                        startTransition(image);
-                    }
-
-                    @Override
-                    public void onError() {
+                    protected void setResource(Bitmap resource) {
+                        image.setImageBitmap(resource);
                         startTransition(image);
                     }
                 });
-            }else {
-                Glide.with(this)
-                        .load(resourceId).asBitmap().centerCrop().
-                        listener(new LoaderCallback<Integer, Bitmap>(image) {
-                            @Override
-                            public void onReady(ImageView image) {
-                                startTransition(image);
-                            }
-                        }).into(image);
-            }
-        }
-
     }
 
     private void startTransition(final ImageView image) {
@@ -88,17 +74,4 @@ public class LollipopActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-
-    @TargetApi(21)
-    private void requestFeature() {
-        getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
-        TransitionSet set=new TransitionSet();
-        set.addTransition(new ChangeBounds());
-        set.addTransition(new ChangeClipBounds());
-        set.addTransition(new ChangeImageTransform());
-        set.setDuration(getResources().getInteger(R.integer.duration));
-        set.setInterpolator(new DecelerateInterpolator());
-        getWindow().setSharedElementEnterTransition(set);
-        getWindow().setSharedElementsUseOverlay(false);
-    }
 }
