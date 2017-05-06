@@ -1,16 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.vasya.phototransition">
-
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE">
-    </uses-permission>
-
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE">
-    </uses-permission>
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/photo_transiton_logo"
+        android:icon="@drawable/logo"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
@@ -19,28 +14,43 @@
             android:name="com.vasya.phototransition.utils.GlideModuleQ"
             android:value="GlideModule" />
 
-        <activity android:name=".MainActivity">
+        <activity android:name=".activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity android:name=".prelollipop.PreLollipopActivity"
+        <activity
+            android:name=".activity.PreLollipopActivity"
             android:theme="@style/DetailsTheme">
         </activity>
 
-        <activity android:name=".prelollipop.PreLollipopListActivity"
+        <activity
+            android:name=".activity.PreLollipopListActivity"
             android:theme="@style/DetailsTheme">
         </activity>
 
-        <activity android:name=".lollipop.LollipopActivity"
+        <activity
+            android:name=".activity.LollipopActivity"
             android:theme="@style/AppTheme">
         </activity>
 
-        <activity android:name=".lollipop.ListLollipopActivity"
+        <activity
+            android:name=".activity.ListLollipopActivity"
             android:theme="@style/AppTheme">
         </activity>
+
+        <activity
+            android:name=".activity.SettingsActivity"
+            android:theme="@style/AppTheme"
+            android:parentActivityName=".activity.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activity.MainActivity"/>
+
+        </activity>
+
     </application>
 
 </manifest>

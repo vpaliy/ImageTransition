@@ -1,4 +1,4 @@
-package com.vasya.phototransition;
+package com.vasya.phototransition.activity;
 
 import android.annotation.TargetApi;
 import android.app.ActivityOptions;
@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -26,17 +25,15 @@ import android.widget.ImageView;
 import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.squareup.otto.Subscribe;
-import com.vasya.phototransition.lollipop.ListLollipopActivity;
-import com.vasya.phototransition.lollipop.LollipopActivity;
-import com.vasya.phototransition.prelollipop.PreLollipopActivity;
-import com.vasya.phototransition.prelollipop.PreLollipopListActivity;
-import com.vasya.phototransition.utils.ProjectUtils;
+import com.vasya.phototransition.R;
+import com.vasya.phototransition.utils.Constants;
 import com.vpaliy.transition.AnimatedImageView;
 import com.vpaliy.transition.ImageState;
 import com.vpaliy.transition.TransitionStarter;
 import com.vpaliy.transition.eventBus.CallbackRequest;
 import com.vpaliy.transition.eventBus.Registrator;
 import com.vpaliy.transition.eventBus.TriggerVisibility;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -45,7 +42,6 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG=MainActivity.class.getSimpleName();
-    private static boolean DEBUG=false;
 
     private static final int PRE_LOLLIPOP=0;
     private static final int LOLLIPOP=1;
@@ -94,9 +90,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(new GalleryAdapter(MainActivity.this,new ArrayList<>(rawDrawableList)));
         final DrawerLayout layout=(DrawerLayout)(findViewById(R.id.drawerLayout));
         NavigationView navigationView=(NavigationView)(findViewById(R.id.navigation));
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        navigationView.setNavigationItemSelectedListener(item->{
                 switch (item.getItemId()) {
                     case R.id.lollipop:
                         transitionChoice=LOLLIPOP;
@@ -113,8 +107,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 layout.closeDrawers();
                 return true;
-            }
-        });
+            });
 
 
     }
@@ -125,8 +118,8 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityReenter(resultCode, data);
         if(transitionChoice==LOLLIPOP_SLIDER) {
             reenterState = data.getExtras();
-            int startPosition = reenterState.getInt(ProjectUtils.START_POSITION);
-            final int currentPosition = reenterState.getInt(ProjectUtils.CURRENT_POSITION);
+            int startPosition = reenterState.getInt(Constants.START_POSITION);
+            final int currentPosition = reenterState.getInt(Constants.CURRENT_POSITION);
 
             //scroll to the image
             if (startPosition != currentPosition) {
@@ -173,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
     @Subscribe
     public void triggerVisibility(TriggerVisibility trigger) {
         ImageView image=(ImageView)(recyclerView.
-                findViewWithTag(ProjectUtils.TRANSITION_NAME(trigger.requestedPosition())));
+                findViewWithTag(Constants.TRANSITION_NAME(trigger.requestedPosition())));
         image.setVisibility(trigger.isVisible()?View.VISIBLE:View.INVISIBLE);
     }
 
@@ -188,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
                 recyclerView.getViewTreeObserver().removeOnPreDrawListener(this);
                 recyclerView.requestLayout();
                 final  ImageView image=(ImageView)(recyclerView.findViewWithTag
-                        (ProjectUtils.TRANSITION_NAME(request.requestedPosition())));
+                        (Constants.TRANSITION_NAME(request.requestedPosition())));
                 request.run(ImageState.newInstance(image));
                 return true;
             }
@@ -248,9 +241,9 @@ public class MainActivity extends AppCompatActivity {
                         .asBitmap()
                         .centerCrop()
                         .into(image);
-                image.setTag(ProjectUtils.TRANSITION_NAME(getAdapterPosition()));
+                image.setTag(Constants.TRANSITION_NAME(getAdapterPosition()));
                 if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP) {
-                    image.setTransitionName(ProjectUtils.TRANSITION_NAME(getAdapterPosition()));
+                    image.setTransitionName(Constants.TRANSITION_NAME(getAdapterPosition()));
                 }
             }
         }
@@ -280,9 +273,9 @@ public class MainActivity extends AppCompatActivity {
         if(transitionChoice==LOLLIPOP_SLIDER) {
             if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP) {
                 Intent intent = new Intent(this, ListLollipopActivity.class);
-                intent.putExtra(ProjectUtils.DATA, mediaFileList);
-                intent.putExtra(ProjectUtils.START_POSITION, position);
-                intent.putExtra(ProjectUtils.PICASSO,isPicasso);
+                intent.putExtra(Constants.DATA, mediaFileList);
+                intent.putExtra(Constants.START_POSITION, position);
+                intent.putExtra(Constants.PICASSO,isPicasso);
                 ActivityOptionsCompat options = ActivityOptionsCompat
                         .makeSceneTransitionAnimation(this, image, image.getTransitionName());
                 startActivity(intent, options.toBundle());
@@ -291,9 +284,9 @@ public class MainActivity extends AppCompatActivity {
             }
         }else {
             Intent intent=new Intent(this, PreLollipopListActivity.class);
-            intent.putExtra(ProjectUtils.DATA, mediaFileList);
-            intent.putExtra(ProjectUtils.START_POSITION, position);
-            intent.putExtra(ProjectUtils.PICASSO,isPicasso);
+            intent.putExtra(Constants.DATA, mediaFileList);
+            intent.putExtra(Constants.START_POSITION, position);
+            intent.putExtra(Constants.PICASSO,isPicasso);
             TransitionStarter.with(this).from(image).startForResult(intent,1,position);
         }
 
@@ -303,16 +296,16 @@ public class MainActivity extends AppCompatActivity {
     private void launchDetailsActivity(int resourceId, AnimatedImageView image, int position) {
         if(transitionChoice==PRE_LOLLIPOP) {
             Intent intent=new Intent(this, PreLollipopActivity.class);
-            intent.putExtra(ProjectUtils.DATA,resourceId);
-            intent.putExtra(ProjectUtils.PICASSO,isPicasso);
-            intent.putExtra(ProjectUtils.START_POSITION,position);
+            intent.putExtra(Constants.DATA,resourceId);
+            intent.putExtra(Constants.PICASSO,isPicasso);
+            intent.putExtra(Constants.START_POSITION,position);
             TransitionStarter.with(this).from(image).start(intent,position); //that's it!
         }else {
             if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP) {
                 Intent intent=new Intent(this, LollipopActivity.class);
-                intent.putExtra(ProjectUtils.KEY,image.getTransitionName());
-                intent.putExtra(ProjectUtils.DATA,resourceId);
-                intent.putExtra(ProjectUtils.PICASSO,isPicasso);
+                intent.putExtra(Constants.KEY,image.getTransitionName());
+                intent.putExtra(Constants.DATA,resourceId);
+                intent.putExtra(Constants.PICASSO,isPicasso);
                 ActivityOptions options = ActivityOptions
                         .makeSceneTransitionAnimation(this, image, image.getTransitionName());
                 startActivity(intent, options.toBundle());
@@ -332,15 +325,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
                 if(reenterState!=null) {
-                    int startPosition = reenterState.getInt(ProjectUtils.START_POSITION);
-                    int currentPosition = reenterState.getInt(ProjectUtils.CURRENT_POSITION);
+                    int startPosition = reenterState.getInt(Constants.START_POSITION);
+                    int currentPosition = reenterState.getInt(Constants.CURRENT_POSITION);
 
                     if(startPosition!=currentPosition) {
-                        View sharedElement=recyclerView.findViewWithTag(ProjectUtils.TRANSITION_NAME(currentPosition));
+                        View sharedElement=recyclerView.findViewWithTag(Constants.TRANSITION_NAME(currentPosition));
                         names.clear();
                         sharedElements.clear();
-                        names.add(ProjectUtils.TRANSITION_NAME(currentPosition));
-                        sharedElements.put(ProjectUtils.TRANSITION_NAME(currentPosition),sharedElement);
+                        names.add(Constants.TRANSITION_NAME(currentPosition));
+                        sharedElements.put(Constants.TRANSITION_NAME(currentPosition),sharedElement);
                     }
                     reenterState=null;
 

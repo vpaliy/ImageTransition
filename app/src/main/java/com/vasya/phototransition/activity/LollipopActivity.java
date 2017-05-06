@@ -1,4 +1,4 @@
-package com.vasya.phototransition.lollipop;
+package com.vasya.phototransition.activity;
 
 import android.annotation.TargetApi;
 import android.graphics.Bitmap;
@@ -17,7 +17,7 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.vasya.phototransition.R;
 import com.vasya.phototransition.utils.LoaderCallback;
-import com.vasya.phototransition.utils.ProjectUtils;
+import com.vasya.phototransition.utils.Constants;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -35,9 +35,9 @@ public class LollipopActivity extends AppCompatActivity {
         }
 
         final ImageView image = (ImageView) (findViewById(R.id.image));
-        final int resourceId = savedInstanceState.getInt(ProjectUtils.DATA,-1);
-        final String transitionName = savedInstanceState.getString(ProjectUtils.KEY);
-        final boolean isPicasso=savedInstanceState.getBoolean(ProjectUtils.PICASSO);
+        final int resourceId = savedInstanceState.getInt(Constants.DATA,-1);
+        final String transitionName = savedInstanceState.getString(Constants.KEY);
+        final boolean isPicasso=savedInstanceState.getBoolean(Constants.PICASSO);
 
         image.setTransitionName(transitionName);
         if(resourceId>0){

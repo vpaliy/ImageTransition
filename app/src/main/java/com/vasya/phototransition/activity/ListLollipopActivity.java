@@ -1,11 +1,12 @@
-package com.vasya.phototransition.lollipop;
+package com.vasya.phototransition.activity;
 
 import android.annotation.TargetApi;
+import android.support.annotation.Nullable;
+import butterknife.BindView;
 import android.app.SharedElementCallback;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -20,26 +21,25 @@ import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
-
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.ImageViewTarget;
 import com.vasya.phototransition.R;
-import com.vasya.phototransition.utils.LoaderCallback;
-import com.vasya.phototransition.utils.ProjectUtils;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
-
+import com.vasya.phototransition.utils.Constants;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import butterknife.ButterKnife;
 
 @TargetApi(21)
 public class ListLollipopActivity extends AppCompatActivity {
 
-    private static final String TAG=ListLollipopActivity.class.getSimpleName();
 
     private ArrayList<Integer> mediaFileList;
-    private ViewPager pager;
-    private boolean mIsReturning=false;
+
+    @BindView(R.id.slider)
+    protected ViewPager pager;
+
+    private boolean isReturning=false;
     private int startPosition;
     private int currentPosition=-1;
     private boolean isPicasso;
@@ -47,22 +47,41 @@ public class ListLollipopActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        requestFeature();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.slider_layout);
-        postponeEnterTransition();
+        ButterKnife.bind(this);
+        initializeTransition();
         if(savedInstanceState==null) {
             savedInstanceState = getIntent().getExtras();
         }
-        initUI(savedInstanceState);
+        setUI(savedInstanceState);
 
     }
 
-    private void initUI(Bundle args) {
 
-        isPicasso=args.getBoolean(ProjectUtils.PICASSO);
-        mediaFileList=args.getIntegerArrayList(ProjectUtils.DATA);
-        startPosition=args.getInt(ProjectUtils.START_POSITION);
+    private void initializeTransition(){
+        postponeEnterTransition();
+        setEnterSharedElementCallback(new SharedElementCallback() {
+            @Override
+            public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
+                if (isReturning) {
+                    View sharedElement =pager.findViewWithTag(Constants.TRANSITION_NAME(currentPosition));
+                    if (startPosition != currentPosition) {
+                        names.clear();
+                        names.add(sharedElement.getTransitionName());
+                        sharedElements.clear();
+                        sharedElements.put(sharedElement.getTransitionName(), sharedElement);
+                    }
+                }
+            }
+        });
+    }
+
+    private void setUI(Bundle args) {
+
+        isPicasso=args.getBoolean(Constants.PICASSO);
+        mediaFileList=args.getIntegerArrayList(Constants.DATA);
+        startPosition=args.getInt(Constants.START_POSITION);
         pager=(ViewPager)(findViewById(R.id.slider));
         pager.setAdapter(new ContentSliderAdapter(mediaFileList));
         pager.setCurrentItem(startPosition);
@@ -76,10 +95,10 @@ public class ListLollipopActivity extends AppCompatActivity {
     @Override
     public void finishAfterTransition() {
         if(currentPosition>0) {
-            mIsReturning = true;
+            isReturning = true;
             Intent data = new Intent();
-            data.putExtra(ProjectUtils.START_POSITION, startPosition);
-            data.putExtra(ProjectUtils.CURRENT_POSITION, currentPosition);
+            data.putExtra(Constants.START_POSITION, startPosition);
+            data.putExtra(Constants.CURRENT_POSITION, currentPosition);
             setResult(RESULT_OK, data);
         }
         super.finishAfterTransition();
@@ -89,10 +108,10 @@ public class ListLollipopActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putSerializable(ProjectUtils.DATA,mediaFileList);
-        outState.putInt(ProjectUtils.START_POSITION,startPosition);
-        outState.putInt(ProjectUtils.CURRENT_POSITION,currentPosition);
-        outState.putBoolean(ProjectUtils.PICASSO,isPicasso);
+        outState.putSerializable(Constants.DATA,mediaFileList);
+        outState.putInt(Constants.START_POSITION,startPosition);
+        outState.putInt(Constants.CURRENT_POSITION,currentPosition);
+        outState.putBoolean(Constants.PICASSO,isPicasso);
     }
 
     private class ContentSliderAdapter extends PagerAdapter {
@@ -113,39 +132,22 @@ public class ListLollipopActivity extends AppCompatActivity {
 
         @Override
         public View instantiateItem(ViewGroup container, final int position) {
-            //TODO fix the inflation here
-            final ImageView itemView=(ImageView)inflater.inflate(R.layout.slider_image,container,false);
-            container.addView(itemView);
-            itemView.setTransitionName(ProjectUtils.TRANSITION_NAME(position));
-            if(isPicasso) {
-                Picasso.with(itemView.getContext())
-                    .load(mediaFileList.get(position % mediaFileList.size()))
-                    .fit().centerCrop().into(itemView,
-                        checkForTransition(position)? new Callback() {
-                    @Override
-                    public void onSuccess() {
-                        startTransition(itemView);
-                    }
-
-                    @Override
-                    public void onError() {
-                        startTransition(itemView);
-                    }
-                }:null);
-
-            }else {
-                Glide.with(itemView.getContext()).
-                        load(mediaFileList.get(position % mediaFileList.size())).
-                        asBitmap().centerCrop().
-                        listener(checkForTransition(position)?new LoaderCallback<Integer, Bitmap>(itemView) {
-                            @Override
-                            public void onReady(ImageView image) {
-                                startTransition(itemView);
+            final ImageView image=ImageView.class.cast(inflater.inflate(R.layout.slider_image,container,false));
+            container.addView(image);
+            image.setTransitionName(Constants.TRANSITION_NAME(position));
+            Glide.with(image.getContext()).
+                    load(mediaFileList.get(position % mediaFileList.size())).
+                    asBitmap().centerCrop()
+                    .into(new ImageViewTarget<Bitmap>(image) {
+                        @Override
+                        protected void setResource(Bitmap resource) {
+                            if(checkForTransition(position)){
+                                startTransition(image);
                             }
-                        }:null).into(itemView);
-            }
-            itemView.setTag(ProjectUtils.TRANSITION_NAME(position));
-            return itemView;
+                        }
+                    });
+            image.setTag(Constants.TRANSITION_NAME(position));
+            return image;
         }
 
         private void startTransition(final ImageView image) {
@@ -206,8 +208,8 @@ public class ListLollipopActivity extends AppCompatActivity {
         setEnterSharedElementCallback(new SharedElementCallback() {
             @Override
             public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
-                if (mIsReturning) {
-                    View sharedElement =pager.findViewWithTag(ProjectUtils.TRANSITION_NAME(currentPosition));
+                if (isReturning) {
+                    View sharedElement =pager.findViewWithTag(Constants.TRANSITION_NAME(currentPosition));
                     if (startPosition != currentPosition) {
                         names.clear();
                         names.add(sharedElement.getTransitionName());

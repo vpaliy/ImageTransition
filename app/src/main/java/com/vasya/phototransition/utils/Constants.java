@@ -1,8 +1,8 @@
 package com.vasya.phototransition.utils;
 
-public final class ProjectUtils {
+public final class Constants {
 
-    private ProjectUtils() {
+    private Constants() {
         throw new RuntimeException();
     }
 

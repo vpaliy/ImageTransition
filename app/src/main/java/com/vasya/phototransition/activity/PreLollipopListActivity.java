@@ -1,4 +1,4 @@
-package com.vasya.phototransition.prelollipop;
+package com.vasya.phototransition.activity;
 
 
 import android.graphics.Bitmap;
@@ -15,7 +15,7 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.vasya.phototransition.R;
 import com.vasya.phototransition.utils.LoaderCallback;
-import com.vasya.phototransition.utils.ProjectUtils;
+import com.vasya.phototransition.utils.Constants;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.vpaliy.transition.AnimatedImageView;
@@ -47,10 +47,10 @@ public class PreLollipopListActivity extends AppCompatActivity {
     }
 
     private void initUI(Bundle args) {
-        isPicasso=args.getBoolean(ProjectUtils.PICASSO);
+        isPicasso=args.getBoolean(Constants.PICASSO);
         runner=TransitionRunner.with(args);
-        ArrayList<Integer> mediaFileList=args.getIntegerArrayList(ProjectUtils.DATA);
-        startPosition=args.getInt(ProjectUtils.START_POSITION);
+        ArrayList<Integer> mediaFileList=args.getIntegerArrayList(Constants.DATA);
+        startPosition=args.getInt(Constants.START_POSITION);
 
 
         ViewPager pager=(ViewPager)(findViewById(R.id.slider));
@@ -141,7 +141,7 @@ public class PreLollipopListActivity extends AppCompatActivity {
             }
 
             imageMap.put(position,itemView);
-            itemView.setTag(ProjectUtils.TRANSITION_NAME(position));
+            itemView.setTag(Constants.TRANSITION_NAME(position));
             return itemView;
         }
 

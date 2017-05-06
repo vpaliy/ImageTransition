@@ -1,4 +1,4 @@
-package com.vasya.phototransition.prelollipop;
+package com.vasya.phototransition.activity;
 
 
 import android.content.Intent;
@@ -11,7 +11,7 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.vasya.phototransition.R;
 import com.vasya.phototransition.utils.LoaderCallback;
-import com.vasya.phototransition.utils.ProjectUtils;
+import com.vasya.phototransition.utils.Constants;
 import com.vpaliy.transition.AnimatedImageView;
 import com.vpaliy.transition.TransitionAnimation;
 import com.vpaliy.transition.TransitionRunner;
@@ -34,7 +34,7 @@ public class PreLollipopActivity extends AppCompatActivity {
         }
 
         final AnimatedImageView animatedImageView=(AnimatedImageView) (findViewById(R.id.image));
-        final int resourceId=savedInstanceState.getInt(ProjectUtils.DATA,-1);
+        final int resourceId=savedInstanceState.getInt(Constants.DATA,-1);
 
         if(resourceId>0){
             Glide.with(this)
