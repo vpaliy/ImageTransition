@@ -1,1 +1,1 @@
-include ':app', ':imagetransition'
+include ':app', ':image-transition'
