@@ -5,7 +5,6 @@
       <module fileurl="file://$PROJECT_DIR$/ImageTransition.iml" filepath="$PROJECT_DIR$/ImageTransition.iml" />
       <module fileurl="file://$PROJECT_DIR$/PhotoTransition.iml" filepath="$PROJECT_DIR$/PhotoTransition.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/image-transition/image-transition.iml" filepath="$PROJECT_DIR$/image-transition/image-transition.iml" />
       <module fileurl="file://$PROJECT_DIR$/imagetransition/imagetransition.iml" filepath="$PROJECT_DIR$/imagetransition/imagetransition.iml" />
     </modules>

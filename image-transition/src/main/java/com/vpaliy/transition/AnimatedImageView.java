@@ -8,11 +8,12 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Matrix;
 import android.graphics.drawable.Drawable;
+import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 import java.util.Arrays;
 
-public class AnimatedImageView extends ImageView {
+public class AnimatedImageView extends AppCompatImageView {
 
     private static final String TAG=AnimatedImageView.class.getSimpleName();
 
@@ -58,15 +59,15 @@ public class AnimatedImageView extends ImageView {
     }
 
     void setTempScaleType(ScaleType scaleType) {
-        setScaleType(scaleType);
-        setFrame(getLeft(), getTop(), getRight(), getBottom());
+      //  setScaleType(scaleType);
+      ///  setFrame(getLeft(), getTop(), getRight(), getBottom());
 
     }
 
 
     Animator animateToScaleType(final ScaleType scaleType) {
 
-        super.setScaleType(originScaleType);
+      /* super.setScaleType(originScaleType);
         setFrame(getLeft(), getTop(), getRight(), getBottom());
         final Matrix srcMatrix = getImageMatrix();
         final float[] srcValues = new float[9];
@@ -135,7 +136,7 @@ public class AnimatedImageView extends ImageView {
                 //  setScaleType(scaleType);
             }
         });
-
+            */
         return mAnimator;
     }
 }

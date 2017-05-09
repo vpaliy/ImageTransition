@@ -3,7 +3,6 @@ apply plugin: 'me.tatarka.retrolambda'
 
 def config=rootProject.ext.configuration;
 def libs=rootProject.ext.dependencies;
-def testLibs=rootProject.ext.testDependencies;
 
 
 android {
@@ -45,34 +44,13 @@ dependencies {
 
     compile project(":image-transition")
 
-    compile libs.multiDex
-    compile libs.materialIconLib
-    compile libs.preferenceCompat7
-    compile libs.cardView
     compile libs.picasso
-    compile libs.expandableTextView
-    compile libs.leakCanary
     compile libs.recyclerView
     compile libs.supportDesign
     compile libs.supportAppCompat
-    compile libs.textDrawable
-    compile libs.circleImage
     compile libs.ottoEventBus
     compile libs.butterKnife
-    compile libs.Dagger2
-    compile libs.circleIndicator
     compile libs.glide
-    compile libs.RxJava
-    compile libs.RxAndroid
-    compile libs.circleIndicator
-    compile libs.palette
-    compile libs.rxRelay
-    annotationProcessor libs.Dagger2Compiler
     annotationProcessor libs.butterKnifeCompiler
-    provided libs.javaxAnnotation
 
-    /* Testing Libraries */
-    testCompile testLibs.mockito
-    testCompile testLibs.espresso
-    testCompile testLibs.jUnit
 }

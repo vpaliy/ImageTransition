@@ -77,7 +77,6 @@ public class TransitionRunner {
         }
     }
 
-
     private TransitionRunner(@NonNull ImageState prevState) {
         this(prevState,-1);
     }
@@ -114,8 +113,6 @@ public class TransitionRunner {
 
     public TransitionRunner target(@NonNull AnimatedImageView target) {
         data.target=target;
-        data.target.setAdjustViewBounds(true);
-       // data.target.setPivotY(0);data.target.setPivotX(0); //may help prevent weird behavior
         data.currentState= ImageState.newInstance(target);
         return this;
     }
